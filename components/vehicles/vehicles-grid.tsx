@@ -1,0 +1,226 @@
+"use client"
+
+import { useState } from "react"
+import { LayoutGrid, List, X, Car, ExternalLink } from "lucide-react"
+import { VehicleStatusBadge } from "./vehicle-status-badge"
+import { formatCurrency, formatDate } from "@/lib/utils"
+import type { Vehicle, Contract, Driver } from "@prisma/client"
+import Link from "next/link"
+
+type VehicleWithContracts = Vehicle & {
+  contracts: (Contract & { driver: Driver })[]
+}
+
+export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] }) {
+  const [view, setView] = useState<"grid" | "list">("grid")
+  const [selected, setSelected] = useState<VehicleWithContracts | null>(null)
+
+  return (
+    <>
+      {/* Toggle */}
+      <div className="flex justify-end mb-4">
+        <div className="flex items-center gap-0.5 bg-gray-900 rounded-xl p-1">
+          <button
+            onClick={() => setView("list")}
+            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+              view === "list" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setView("grid")}
+            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+              view === "grid" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Grid */}
+      {view === "grid" && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+          {vehicles.map((v) => (
+            <button key={v.id} onClick={() => setSelected(v)} className="text-left group">
+              <div className="bg-white rounded-xl border p-4 hover:shadow-md hover:border-blue-200 transition-all h-full">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="p-1.5 bg-blue-50 rounded-lg">
+                    <Car className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <VehicleStatusBadge status={v.status} />
+                </div>
+                <h3 className="font-semibold text-gray-900 text-sm mt-2 leading-tight">
+                  {v.brand} {v.model}
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">{v.year} · {v.licensePlate}</p>
+                <div className="mt-3 pt-3 border-t flex items-center justify-between">
+                  <span className="text-xs text-gray-400">{v.mileage.toLocaleString("fr-FR")} km</span>
+                  <span className="text-sm font-semibold text-blue-600">{formatCurrency(Number(v.dailyRate))}/j</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* List */}
+      {view === "list" && (
+        <div className="bg-white rounded-xl border divide-y">
+          {vehicles.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => setSelected(v)}
+              className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left"
+            >
+              <div className="p-2 bg-blue-50 rounded-lg shrink-0">
+                <Car className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm">{v.brand} {v.model}</p>
+                <p className="text-xs text-gray-400">{v.year} · {v.licensePlate} · {v.mileage.toLocaleString("fr-FR")} km</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-sm font-semibold text-blue-600">{formatCurrency(Number(v.dailyRate))}/j</p>
+                {v.monthlyRate && (
+                  <p className="text-xs text-gray-400">{formatCurrency(Number(v.monthlyRate))}/mois</p>
+                )}
+              </div>
+              <VehicleStatusBadge status={v.status} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Modal détails */}
+      {selected && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Car className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-semibold text-gray-900">{selected.brand} {selected.model}</h2>
+                    <VehicleStatusBadge status={selected.status} />
+                  </div>
+                  <p className="text-sm text-gray-500">{selected.year} · {selected.licensePlate}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/vehicles/${selected.id}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Modifier
+                </Link>
+                <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-1">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto p-6 space-y-6">
+
+              {/* Informations */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Informations</h3>
+                <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {[
+                    { label: "Marque", value: selected.brand },
+                    { label: "Modèle", value: selected.model },
+                    { label: "Année", value: String(selected.year) },
+                    { label: "Couleur", value: selected.color ?? "—" },
+                    { label: "Immatriculation", value: selected.licensePlate },
+                    { label: "VIN", value: selected.vin ?? "—" },
+                    { label: "Kilométrage", value: `${selected.mileage.toLocaleString("fr-FR")} km` },
+                  ].map(({ label, value }) => (
+                    <div key={label}>
+                      <dt className="text-xs text-gray-400 mb-0.5">{label}</dt>
+                      <dd className="text-sm font-medium text-gray-900">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              {/* Tarifs */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Tarifs</h3>
+                <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <dt className="text-xs text-gray-400 mb-0.5">Journalier</dt>
+                    <dd className="text-sm font-semibold text-blue-600">{formatCurrency(Number(selected.dailyRate))}</dd>
+                  </div>
+                  {selected.weeklyRate && (
+                    <div>
+                      <dt className="text-xs text-gray-400 mb-0.5">Hebdomadaire</dt>
+                      <dd className="text-sm font-medium text-gray-900">{formatCurrency(Number(selected.weeklyRate))}</dd>
+                    </div>
+                  )}
+                  {selected.monthlyRate && (
+                    <div>
+                      <dt className="text-xs text-gray-400 mb-0.5">Mensuel</dt>
+                      <dd className="text-sm font-medium text-gray-900">{formatCurrency(Number(selected.monthlyRate))}</dd>
+                    </div>
+                  )}
+                  {selected.depositAmount && (
+                    <div>
+                      <dt className="text-xs text-gray-400 mb-0.5">Caution</dt>
+                      <dd className="text-sm font-medium text-gray-900">{formatCurrency(Number(selected.depositAmount))}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+
+              {/* Notes */}
+              {selected.notes && (
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Notes</h3>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{selected.notes}</p>
+                </div>
+              )}
+
+              {/* Derniers contrats */}
+              {selected.contracts.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Derniers contrats</h3>
+                  <div className="space-y-0 divide-y rounded-xl border overflow-hidden">
+                    {selected.contracts.map((c) => (
+                      <div key={c.id} className="flex items-center justify-between px-4 py-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{c.number}</p>
+                          <p className="text-xs text-gray-400">
+                            {c.driver.firstName} {c.driver.lastName} · {formatDate(c.startDate)} → {formatDate(c.endDate)}
+                          </p>
+                        </div>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                          c.status === "ACTIVE" ? "bg-green-100 text-green-700" :
+                          c.status === "COMPLETED" ? "bg-gray-100 text-gray-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
+                          {c.status === "ACTIVE" ? "Actif" : c.status === "COMPLETED" ? "Terminé" : "Annulé"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}

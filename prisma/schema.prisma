@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Organization {
@@ -14,6 +13,7 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   users     User[]
+  settings  OrganizationSettings?
   vehicles  Vehicle[]
   drivers   Driver[]
   quotes    Quote[]
@@ -58,6 +58,31 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+model OrganizationSettings {
+  id               String       @id @default(cuid())
+  // Identité visuelle documents
+  primaryColor     String       @default("#2563eb")
+  secondaryColor   String       @default("#1e40af")
+  accentColor      String       @default("#eff6ff")
+  documentFont     String       @default("Helvetica")
+  logoBase64       String?      @db.Text
+  // Informations société
+  companyName      String?
+  legalForm        String?
+  siret            String?
+  vatNumber        String?
+  companyAddress   String?
+  companyCity      String?
+  companyZip       String?
+  companyCountry   String?      @default("France")
+  companyPhone     String?
+  companyEmail     String?
+  companyWebsite   String?
+  updatedAt        DateTime     @updatedAt
+  organizationId   String       @unique
+  organization     Organization @relation(fields: [organizationId], references: [id])
+}
+
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -85,6 +110,9 @@ model Vehicle {
   mileage        Int           @default(0)
   status         VehicleStatus @default(AVAILABLE)
   dailyRate      Decimal       @db.Decimal(10, 2)
+  weeklyRate     Decimal?      @db.Decimal(10, 2)
+  monthlyRate    Decimal?      @db.Decimal(10, 2)
+  depositAmount  Decimal?      @db.Decimal(10, 2)
   imageUrl       String?
   notes          String?
   createdAt      DateTime      @default(now())
@@ -132,13 +160,21 @@ model Quote {
   clientAddress  String?
   startDate      DateTime
   endDate        DateTime
+  vehicleId      String?
   vehicleDesc    String
+  rateType       String       @default("DAILY")
   dailyRate      Decimal      @db.Decimal(10, 2)
   days           Int
   subtotal       Decimal      @db.Decimal(10, 2)
-  taxRate        Decimal      @db.Decimal(5, 2) @default(19)
-  taxAmount      Decimal      @db.Decimal(10, 2)
-  total          Decimal      @db.Decimal(10, 2)
+  discountType   String       @default("PERCENT")
+  discountValue  Decimal      @db.Decimal(10, 2) @default(0)
+  discountAmount Decimal      @db.Decimal(10, 2) @default(0)
+  taxRate        Decimal      @db.Decimal(5, 2) @default(20)
+  taxAmount           Decimal      @db.Decimal(10, 2)
+  total               Decimal      @db.Decimal(10, 2)
+  billingMode         String       @default("FULL")
+  installmentAmount   Decimal?     @db.Decimal(10, 2)
+  totalInstallments   Int?
   notes          String?
   validUntil     DateTime?
   pdfUrl         String?
@@ -147,7 +183,7 @@ model Quote {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  invoice Invoice?
+  invoices Invoice[]
 }
 
 enum QuoteStatus {
@@ -172,9 +208,11 @@ model Invoice {
   taxRate        Decimal       @db.Decimal(5, 2) @default(19)
   taxAmount      Decimal       @db.Decimal(10, 2)
   total          Decimal       @db.Decimal(10, 2)
+  installmentNumber   Int?
+  totalInstallments   Int?
   notes          String?
   pdfUrl         String?
-  quoteId        String?       @unique
+  quoteId        String?
   quote          Quote?        @relation(fields: [quoteId], references: [id])
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -201,10 +239,29 @@ model Contract {
   depositAmount  Decimal?       @db.Decimal(10, 2)
   mileageStart   Int?
   mileageEnd     Int?
-  fuelLevelStart String?
-  fuelLevelEnd   String?
-  terms          String?
+  fuelLevelStart  String?
+  fuelLevelEnd    String?
+  conditionStart  Json?
+  conditionEnd    Json?
+  terms           String?
+  // Modalités financières
+  paymentAmount             Decimal?  @db.Decimal(10, 2)
+  paymentTaxType            String?
+  paymentDueDay             Int?
+  paymentMethod             String?
+  depositReturnConditions   String?
+  // Usage kilométrique
+  mileageAllowance          Int?
+  extraMileageCost          Decimal?  @db.Decimal(10, 2)
+  // Assurance & entretien
+  insuranceFranchise        Decimal?  @db.Decimal(10, 2)
+  insuranceInfo             String?
+  maintenanceInfo           String?
+  // Résiliation & restitution
+  returnLocation            String?
+  earlyTerminationConditions String?
   pdfUrl         String?
+  quoteId        String?        @unique
   vehicleId      String
   vehicle        Vehicle        @relation(fields: [vehicleId], references: [id])
   driverId       String

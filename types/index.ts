@@ -63,6 +63,9 @@ export type CreateVehicleInput = {
   mileage?: number
   status?: VehicleStatus
   dailyRate: number
+  weeklyRate?: number
+  monthlyRate?: number
+  depositAmount?: number
   imageUrl?: string
   notes?: string
 }
@@ -91,10 +94,21 @@ export type CreateQuoteInput = {
   clientAddress?: string
   startDate: Date
   endDate: Date
+  vehicleId?: string
   vehicleDesc: string
+  rateType: string
   dailyRate: number
   days: number
+  subtotal: number
+  discountType: string
+  discountValue: number
+  discountAmount: number
   taxRate?: number
+  taxAmount: number
+  total: number
+  billingMode: string
+  installmentAmount?: number
+  totalInstallments?: number
   notes?: string
   validUntil?: Date
 }
@@ -119,8 +133,26 @@ export type CreateContractInput = {
   depositAmount?: number
   mileageStart?: number
   fuelLevelStart?: string
+  conditionStart?: Record<string, { type: string; severity: string; note: string }>
   terms?: string
   invoiceId?: string
+  quoteId?: string
+  // Modalités financières
+  paymentAmount?: number
+  paymentTaxType?: string
+  paymentDueDay?: number
+  paymentMethod?: string
+  depositReturnConditions?: string
+  // Usage kilométrique
+  mileageAllowance?: number
+  extraMileageCost?: number
+  // Assurance & entretien
+  insuranceFranchise?: number
+  insuranceInfo?: string
+  maintenanceInfo?: string
+  // Résiliation & restitution
+  returnLocation?: string
+  earlyTerminationConditions?: string
 }
 
 // Action response type
