@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { resend } from "@/lib/resend"
+import { getResend } from "@/lib/resend"
 import crypto from "crypto"
 import { z } from "zod"
 
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`
 
-    await resend.emails.send({
+    await getResend().emails.send({
       from: process.env.RESEND_FROM_EMAIL!,
       to: email,
       subject: "Réinitialisation de votre mot de passe – FleetManager",
