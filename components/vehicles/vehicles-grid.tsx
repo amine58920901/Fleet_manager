@@ -125,7 +125,11 @@ export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] })
                   <ExternalLink className="w-3.5 h-3.5" />
                   Modifier
                 </Link>
-                <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-1">
+                <button
+                  onClick={() => setSelected(null)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  aria-label="Fermer"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -217,6 +221,14 @@ export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] })
                   </div>
                 </div>
               )}
+              <div className="px-6 pb-6 shrink-0">
+                <button
+                  onClick={() => setSelected(null)}
+                  className="w-full py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
         </div>
