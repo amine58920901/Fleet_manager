@@ -104,26 +104,26 @@ export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] })
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
+            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-blue-50 rounded-lg shrink-0">
                   <Car className="h-5 w-5 text-blue-600" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-gray-900">{selected.brand} {selected.model}</h2>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-semibold text-gray-900 truncate">{selected.brand} {selected.model}</h2>
                     <VehicleStatusBadge status={selected.status} />
                   </div>
-                  <p className="text-sm text-gray-500">{selected.year} · {selected.licensePlate}</p>
+                  <p className="text-sm text-gray-500 truncate">{selected.year} · {selected.licensePlate}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <Link
                   href={`/vehicles/${selected.id}`}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  Modifier
+                  <span className="hidden sm:inline">Modifier</span>
                 </Link>
                 <button
                   onClick={() => setSelected(null)}
