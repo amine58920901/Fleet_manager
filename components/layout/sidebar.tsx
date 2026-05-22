@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
-import { navItems, bottomNavItems } from "@/components/layout/nav-items"
+import { navItems, adminNavItems, bottomNavItems } from "@/components/layout/nav-items"
 
 function NavLink({ href, label, icon: Icon }: { href: string; label: string; icon: React.ElementType }) {
   const pathname = usePathname()
@@ -25,6 +26,9 @@ function NavLink({ href, label, icon: Icon }: { href: string; label: string; ico
 }
 
 export function Sidebar() {
+  const { data: session } = useSession()
+  const isAdmin = (session?.user as any)?.role === "ADMIN"
+
   return (
     <aside className="hidden lg:flex w-60 bg-gray-900 text-white flex-col sticky top-0 h-screen">
       <div className="px-6 py-5 border-b border-gray-800 flex-shrink-0">
@@ -33,6 +37,7 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => <NavLink key={item.href} {...item} />)}
+        {isAdmin && adminNavItems.map((item) => <NavLink key={item.href} {...item} />)}
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-800 space-y-1 flex-shrink-0">

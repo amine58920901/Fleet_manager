@@ -4,11 +4,13 @@ import { useState } from "react"
 import type { OrganizationSettings } from "@prisma/client"
 import { CompanySettingsForm } from "./company-settings-form"
 import { DocumentSettingsForm } from "./document-settings-form"
-import { Building2, FileText } from "lucide-react"
+import { AccountForm } from "./account-form"
+import { Building2, FileText, UserCircle } from "lucide-react"
 
 const TABS = [
   { id: "company", label: "Ma société", icon: Building2 },
   { id: "documents", label: "Documents", icon: FileText },
+  { id: "account", label: "Mon compte", icon: UserCircle },
 ] as const
 
 type TabId = (typeof TABS)[number]["id"]
@@ -63,6 +65,7 @@ export function SettingsShell({ settings, orgName }: SettingsShellProps) {
         {tab === "documents" && (
           <DocumentSettingsForm settings={settings} orgName={orgName} />
         )}
+        {tab === "account" && <AccountForm />}
       </div>
     </div>
   )

@@ -3,9 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Menu, X } from "lucide-react"
-import { navItems, bottomNavItems } from "@/components/layout/nav-items"
+import { navItems, adminNavItems, bottomNavItems } from "@/components/layout/nav-items"
 
 function NavLink({
   href,
@@ -39,6 +40,8 @@ function NavLink({
 export function MobileNav() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const isAdmin = (session?.user as any)?.role === "ADMIN"
   const close = () => setOpen(false)
 
   return (
@@ -70,6 +73,9 @@ export function MobileNav() {
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
+            <NavLink key={item.href} {...item} pathname={pathname} onClose={close} />
+          ))}
+          {isAdmin && adminNavItems.map((item) => (
             <NavLink key={item.href} {...item} pathname={pathname} onClose={close} />
           ))}
         </nav>

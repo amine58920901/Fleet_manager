@@ -1,4 +1,4 @@
-import { LayoutDashboard, Car, Users, FileText, Receipt, ClipboardList, Settings } from "lucide-react"
+import { LayoutDashboard, Car, Users, FileText, Receipt, ClipboardList, Settings, Shield } from "lucide-react"
 
 export const navItems = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
@@ -7,6 +7,10 @@ export const navItems = [
   { href: "/quotes", label: "Devis", icon: FileText },
   { href: "/invoices", label: "Factures", icon: Receipt },
   { href: "/contracts", label: "Contrats", icon: ClipboardList },
+]
+
+export const adminNavItems = [
+  { href: "/team", label: "Équipe", icon: Shield },
 ]
 
 export const bottomNavItems = [
