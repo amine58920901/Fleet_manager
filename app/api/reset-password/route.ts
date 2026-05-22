@@ -23,12 +23,10 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    await db.user.update({
-      where: { email: resetToken.email },
-      data: { hashedPassword },
-    })
-
-    await db.passwordResetToken.delete({ where: { token } })
+    await Promise.all([
+      db.user.update({ where: { email: resetToken.email }, data: { hashedPassword } }),
+      db.passwordResetToken.delete({ where: { token } }),
+    ])
 
     return NextResponse.json({ success: true })
   } catch {
