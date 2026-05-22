@@ -2,23 +2,44 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { QuoteStatusBadge } from "@/components/quotes/quote-status-badge"
+import { StatusFilter } from "@/components/ui/status-filter"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import type { QuoteStatus } from "@prisma/client"
 
-export default async function QuotesPage() {
+const VALID_STATUSES: QuoteStatus[] = ["DRAFT", "SENT", "ACCEPTED", "REFUSED", "EXPIRED"]
+
+const FILTER_OPTIONS = [
+  { value: "ALL", label: "Tous" },
+  { value: "DRAFT", label: "Brouillon" },
+  { value: "SENT", label: "Envoyé" },
+  { value: "ACCEPTED", label: "Accepté" },
+  { value: "REFUSED", label: "Refusé" },
+  { value: "EXPIRED", label: "Expiré" },
+]
+
+export default async function QuotesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
+  const { status } = await searchParams
   const session = await auth()
+
+  const statusFilter =
+    status && VALID_STATUSES.includes(status as QuoteStatus)
+      ? { status: status as QuoteStatus }
+      : {}
+
   const quotes = await db.quote.findMany({
-    where: { organizationId: session!.user.organizationId },
+    where: { organizationId: session!.user.organizationId, ...statusFilter },
     orderBy: { createdAt: "desc" },
   })
 
   return (
     <div>
-      <PageHeader
-        title="Devis"
-        description={`${quotes.length} devis`}
-      >
+      <PageHeader title="Devis" description={`${quotes.length} devis`}>
         <Link
           href="/quotes/new"
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -28,9 +49,11 @@ export default async function QuotesPage() {
         </Link>
       </PageHeader>
 
+      <StatusFilter options={FILTER_OPTIONS} />
+
       {quotes.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-lg">Aucun devis pour l&apos;instant</p>
+          <p className="text-lg">Aucun devis{status && status !== "ALL" ? " pour ce statut" : " pour l'instant"}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border overflow-hidden overflow-x-auto">

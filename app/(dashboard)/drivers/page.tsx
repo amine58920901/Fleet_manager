@@ -4,11 +4,31 @@ import { PageHeader } from "@/components/layout/page-header"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { DriversGrid } from "@/components/drivers/drivers-grid"
+import { StatusFilter } from "@/components/ui/status-filter"
 
-export default async function DriversPage() {
+const FILTER_OPTIONS = [
+  { value: "ALL", label: "Tous" },
+  { value: "ACTIVE", label: "En course" },
+  { value: "AVAILABLE", label: "Disponible" },
+]
+
+export default async function DriversPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
+  const { status } = await searchParams
   const session = await auth()
+
+  const activityFilter =
+    status === "ACTIVE"
+      ? { contracts: { some: { status: "ACTIVE" as const } } }
+      : status === "AVAILABLE"
+      ? { contracts: { none: { status: "ACTIVE" as const } } }
+      : {}
+
   const drivers = await db.driver.findMany({
-    where: { organizationId: session!.user.organizationId },
+    where: { organizationId: session!.user.organizationId, ...activityFilter },
     orderBy: { createdAt: "desc" },
     include: {
       contracts: {
@@ -34,9 +54,15 @@ export default async function DriversPage() {
         </Link>
       </PageHeader>
 
+      <StatusFilter options={FILTER_OPTIONS} />
+
       {drivers.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-lg">Aucun chauffeur pour l&apos;instant</p>
+          <p className="text-lg">
+            {status && status !== "ALL"
+              ? "Aucun chauffeur pour ce statut"
+              : "Aucun chauffeur pour l'instant"}
+          </p>
         </div>
       ) : (
         <DriversGrid drivers={drivers} />

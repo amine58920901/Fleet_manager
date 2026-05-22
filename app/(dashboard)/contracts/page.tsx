@@ -1,28 +1,50 @@
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
+import { StatusFilter } from "@/components/ui/status-filter"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import type { ContractStatus } from "@prisma/client"
 
-export default async function ContractsPage() {
+const VALID_STATUSES: ContractStatus[] = ["ACTIVE", "COMPLETED", "CANCELLED"]
+
+const statusLabel: Record<ContractStatus, string> = {
+  ACTIVE: "Actif",
+  COMPLETED: "Terminé",
+  CANCELLED: "Annulé",
+}
+const statusClass: Record<ContractStatus, string> = {
+  ACTIVE: "bg-green-100 text-green-700",
+  COMPLETED: "bg-gray-100 text-gray-700",
+  CANCELLED: "bg-red-100 text-red-700",
+}
+
+const FILTER_OPTIONS = [
+  { value: "ALL", label: "Tous" },
+  { value: "ACTIVE", label: "Actif" },
+  { value: "COMPLETED", label: "Terminé" },
+  { value: "CANCELLED", label: "Annulé" },
+]
+
+export default async function ContractsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
+  const { status } = await searchParams
   const session = await auth()
+
+  const statusFilter =
+    status && VALID_STATUSES.includes(status as ContractStatus)
+      ? { status: status as ContractStatus }
+      : {}
+
   const contracts = await db.contract.findMany({
-    where: { organizationId: session!.user.organizationId },
+    where: { organizationId: session!.user.organizationId, ...statusFilter },
     include: { vehicle: true, driver: true },
     orderBy: { createdAt: "desc" },
   })
-
-  const statusLabel: Record<string, string> = {
-    ACTIVE: "Actif",
-    COMPLETED: "Terminé",
-    CANCELLED: "Annulé",
-  }
-  const statusClass: Record<string, string> = {
-    ACTIVE: "bg-green-100 text-green-700",
-    COMPLETED: "bg-gray-100 text-gray-700",
-    CANCELLED: "bg-red-100 text-red-700",
-  }
 
   return (
     <div>
@@ -36,9 +58,11 @@ export default async function ContractsPage() {
         </Link>
       </PageHeader>
 
+      <StatusFilter options={FILTER_OPTIONS} />
+
       {contracts.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-lg">Aucun contrat pour l&apos;instant</p>
+          <p className="text-lg">Aucun contrat{status && status !== "ALL" ? " pour ce statut" : " pour l'instant"}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border overflow-hidden overflow-x-auto">

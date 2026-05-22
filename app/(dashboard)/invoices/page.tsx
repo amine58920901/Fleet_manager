@@ -2,14 +2,37 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { InvoiceStatusBadge } from "@/components/invoices/invoice-status-badge"
+import { StatusFilter } from "@/components/ui/status-filter"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import type { InvoiceStatus } from "@prisma/client"
 
-export default async function InvoicesPage() {
+const VALID_STATUSES: InvoiceStatus[] = ["UNPAID", "PAID", "OVERDUE", "CANCELLED"]
+
+const FILTER_OPTIONS = [
+  { value: "ALL", label: "Toutes" },
+  { value: "UNPAID", label: "Non payée" },
+  { value: "PAID", label: "Payée" },
+  { value: "OVERDUE", label: "En retard" },
+  { value: "CANCELLED", label: "Annulée" },
+]
+
+export default async function InvoicesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
+  const { status } = await searchParams
   const session = await auth()
+
+  const statusFilter =
+    status && VALID_STATUSES.includes(status as InvoiceStatus)
+      ? { status: status as InvoiceStatus }
+      : {}
+
   const invoices = await db.invoice.findMany({
-    where: { organizationId: session!.user.organizationId },
+    where: { organizationId: session!.user.organizationId, ...statusFilter },
     orderBy: { createdAt: "desc" },
   })
 
@@ -25,9 +48,11 @@ export default async function InvoicesPage() {
         </Link>
       </PageHeader>
 
+      <StatusFilter options={FILTER_OPTIONS} />
+
       {invoices.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-lg">Aucune facture pour l&apos;instant</p>
+          <p className="text-lg">Aucune facture{status && status !== "ALL" ? " pour ce statut" : " pour l'instant"}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border overflow-hidden overflow-x-auto">
