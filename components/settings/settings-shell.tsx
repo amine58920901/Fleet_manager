@@ -22,9 +22,9 @@ export function SettingsShell({ settings, orgName }: SettingsShellProps) {
   const [tab, setTab] = useState<TabId>("company")
 
   return (
-    <div className="flex gap-6 max-w-5xl">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 max-w-5xl">
       {/* Sidebar navigation */}
-      <aside className="w-52 flex-shrink-0">
+      <aside className="w-full lg:w-52 flex-shrink-0">
         <nav className="bg-white rounded-xl border overflow-hidden">
           {TABS.map((t) => {
             const Icon = t.icon

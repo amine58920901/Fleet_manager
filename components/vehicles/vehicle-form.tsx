@@ -100,7 +100,7 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
   if (vehicle) {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Marque *</label>
             <VehicleCombobox options={brandNames} value={brand} onChange={handleBrandChange} placeholder="Marque" />
@@ -116,7 +116,7 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Année *</label>
             <VehicleCombobox options={CAR_YEARS} value={year} onChange={setYear} placeholder="Année" />
@@ -150,7 +150,7 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
         </div>
         <div className="pt-1">
           <p className="text-xs font-semibold text-gray-700 mb-2">Tarifs (€)</p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-xs text-gray-500 mb-1">Journalier *</label>
               <div className="relative">
@@ -195,7 +195,7 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Caution (€)</label>
             <input

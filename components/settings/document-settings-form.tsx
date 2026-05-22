@@ -188,7 +188,7 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
           </div>
 
           {/* Pickers personnalisés */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <ColorPicker label="Couleur principale" description="En-tête, titres" value={primary} onChange={setPrimary} />
             <ColorPicker label="Couleur secondaire" description="Totaux, accents forts" value={secondary} onChange={setSecondary} />
             <ColorPicker label="Couleur de fond" description="Fond des blocs infos" value={accent} onChange={setAccent} />
@@ -202,7 +202,7 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
           <h2 className="text-sm font-semibold text-gray-700">Police des documents</h2>
         </div>
         <div className="p-5">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {FONTS.map((f) => (
               <button
                 key={f.id}

@@ -50,7 +50,7 @@ export function DriverForm({ driver }: DriverFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
           <input name="firstName" required defaultValue={driver?.firstName}
@@ -63,7 +63,7 @@ export function DriverForm({ driver }: DriverFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input name="email" type="email" defaultValue={driver?.email ?? ""}
@@ -76,7 +76,7 @@ export function DriverForm({ driver }: DriverFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">N° permis *</label>
           <input name="licenseNumber" required defaultValue={driver?.licenseNumber}
@@ -89,7 +89,7 @@ export function DriverForm({ driver }: DriverFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
           <input name="birthDate" type="date" defaultValue={toDateInput(driver?.birthDate)}

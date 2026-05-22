@@ -103,7 +103,7 @@ export function ContractForm({ vehicles, drivers, prefill }: ContractFormProps) 
       {/* Véhicule & Chauffeur */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Véhicule & Chauffeur</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Véhicule *</label>
             <select name="vehicleId" required
@@ -146,7 +146,7 @@ export function ContractForm({ vehicles, drivers, prefill }: ContractFormProps) 
       {/* Période */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Période</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date de début *</label>
             <input name="startDate" type="date" required
@@ -165,7 +165,7 @@ export function ContractForm({ vehicles, drivers, prefill }: ContractFormProps) 
       {/* Modalités financières */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Modalités financières</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Montant de la mensualité</label>
             <div className="flex gap-2">
@@ -215,7 +215,7 @@ export function ContractForm({ vehicles, drivers, prefill }: ContractFormProps) 
       {/* État du véhicule au départ */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-900 mb-4">État du véhicule au départ</h2>
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Kilométrage départ</label>
             <input name="mileageStart" type="number"
@@ -255,7 +255,7 @@ export function ContractForm({ vehicles, drivers, prefill }: ContractFormProps) 
       {/* Assurance & entretien */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Assurance & entretien</h2>
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Franchise en cas de sinistre (€)</label>
             <input name="insuranceFranchise" type="number" step="0.01" placeholder="Ex : 500"

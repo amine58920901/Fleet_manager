@@ -42,7 +42,7 @@ export function InvoiceForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Client</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Nom du client *</label>
             <input name="clientName" required
@@ -68,7 +68,7 @@ export function InvoiceForm() {
 
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Montant & échéance</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Montant HT (€) *</label>
             <input name="subtotal" type="number" step="0.01" required

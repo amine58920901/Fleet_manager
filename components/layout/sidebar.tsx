@@ -48,7 +48,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-60 bg-gray-900 text-white flex flex-col sticky top-0 h-screen">
+    <aside className="hidden lg:flex w-60 bg-gray-900 text-white flex-col sticky top-0 h-screen">
       <div className="px-6 py-5 border-b border-gray-800 flex-shrink-0">
         <h1 className="text-lg font-bold text-white">FleetManager</h1>
       </div>

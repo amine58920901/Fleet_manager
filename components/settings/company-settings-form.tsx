@@ -55,7 +55,7 @@ export function CompanySettingsForm({ settings, orgName }: Props) {
 
       {/* Identité légale */}
       <Section title="Identité légale">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="col-span-2">
             <Field label="Raison sociale *">
               <input
@@ -97,7 +97,7 @@ export function CompanySettingsForm({ settings, orgName }: Props) {
 
       {/* Adresse */}
       <Section title="Adresse du siège social">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="col-span-2">
             <Field label="Adresse">
               <input
@@ -139,7 +139,7 @@ export function CompanySettingsForm({ settings, orgName }: Props) {
 
       {/* Contact */}
       <Section title="Coordonnées">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Téléphone">
             <input
               name="companyPhone"
