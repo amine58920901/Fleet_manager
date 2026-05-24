@@ -2,12 +2,13 @@ import {
   Document, Page, Text, View, StyleSheet, Font, Image,
 } from "@react-pdf/renderer"
 import type { Contract, Vehicle, Driver, OrganizationSettings } from "@prisma/client"
+import path from "path"
 
 Font.register({
   family: "Plus Jakarta Sans",
   fonts: [
-    { src: "https://fonts.gstatic.com/s/plusjakartasans/v3/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.ttf", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/plusjakartasans/v3/LDIoaomQNQcsA88c7O9yZ4KMCoOg4IA70yyygA.ttf", fontWeight: 700 },
+    { src: path.join(process.cwd(), "public/fonts/PlusJakartaSans-Regular.ttf"), fontWeight: 400 },
+    { src: path.join(process.cwd(), "public/fonts/PlusJakartaSans-Bold.ttf"), fontWeight: 700 },
   ],
 })
 
