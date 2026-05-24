@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
+import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { navItems, adminNavItems, bottomNavItems } from "@/components/layout/nav-items"
 
@@ -42,6 +43,13 @@ export function Sidebar() {
 
       <div className="border-t border-white/10 pt-2 pb-6 space-y-0.5 shrink-0">
         {bottomNavItems.map((item) => <NavLink key={item.href} {...item} />)}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full flex items-center gap-3 px-6 py-3 text-sm font-semibold tracking-wide text-[#b6c4ff] hover:text-red-300 hover:bg-white/10 border-l-4 border-transparent transition-all duration-200"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          Déconnexion
+        </button>
       </div>
     </aside>
   )
