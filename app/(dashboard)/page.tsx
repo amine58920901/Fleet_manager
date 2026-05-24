@@ -253,7 +253,7 @@ export default async function DashboardPage() {
                       className={`w-full rounded-t-lg transition-all duration-300 ${
                         month.isCurrent
                           ? "bg-[#00236f]"
-                          : "bg-[#b6c4ff]/50 group-hover/bar:bg-[#1e3a8a]/60"
+                          : "bg-[#b6c4ff] group-hover/bar:bg-[#1e3a8a]"
                       }`}
                       style={{ height: `${heightPct}%` }}
                     />
