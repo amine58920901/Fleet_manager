@@ -12,6 +12,14 @@ Font.register({
   ],
 })
 
+Font.register({
+  family: "Montserrat",
+  fonts: [
+    { src: path.join(process.cwd(), "public/fonts/Montserrat-Regular.ttf"), fontWeight: 400 },
+    { src: path.join(process.cwd(), "public/fonts/Montserrat-Bold.ttf"), fontWeight: 700 },
+  ],
+})
+
 const ZONES = [
   { id: "parechoc_av",  label: "Pare-choc avant" },
   { id: "capot",        label: "Capot" },
@@ -76,14 +84,21 @@ interface ConditionPDFProps {
   settings: OrganizationSettings | null
 }
 
+const BUILTIN_FONTS = new Set(["Helvetica", "Times-Roman", "Courier"])
+
+function resolveFont(documentFont: string | null | undefined): string {
+  return BUILTIN_FONTS.has(documentFont ?? "") ? documentFont! : (documentFont ?? "Plus Jakarta Sans")
+}
+
 export function ConditionPDF({ contract, settings }: ConditionPDFProps) {
   const companyName = settings?.companyName ?? "FleetManager"
+  const fontFamily = resolveFont(settings?.documentFont)
   const condition = (contract.conditionStart ?? {}) as VehicleCondition
   const damagedCount = Object.keys(condition).length
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, { fontFamily }]}>
         {/* Header */}
         <View style={styles.header}>
           <View>

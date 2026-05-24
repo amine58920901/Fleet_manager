@@ -7,9 +7,11 @@ import type { OrganizationSettings } from "@prisma/client"
 import { Upload, X, Check } from "lucide-react"
 
 const FONTS: { id: string; label: string; description: string; style: React.CSSProperties }[] = [
-  { id: "Helvetica",   label: "Helvetica",   description: "Sans-serif · Moderne & épuré",  style: { fontFamily: "Arial, sans-serif" } },
-  { id: "Times-Roman", label: "Times Roman",  description: "Serif · Classique & formel",   style: { fontFamily: "Georgia, serif" } },
-  { id: "Courier",     label: "Courier",      description: "Monospace · Technique",         style: { fontFamily: "Courier New, monospace" } },
+  { id: "Helvetica",        label: "Helvetica",        description: "Sans-serif · Moderne & épuré",  style: { fontFamily: "Arial, sans-serif" } },
+  { id: "Times-Roman",      label: "Times Roman",       description: "Serif · Classique & formel",   style: { fontFamily: "Georgia, serif" } },
+  { id: "Courier",          label: "Courier",           description: "Monospace · Technique",         style: { fontFamily: "Courier New, monospace" } },
+  { id: "Plus Jakarta Sans", label: "Plus Jakarta Sans", description: "Sans-serif · Contemporain",    style: { fontFamily: "'Plus Jakarta Sans', Arial, sans-serif" } },
+  { id: "Montserrat",       label: "Montserrat",        description: "Sans-serif · Élégant & pro",   style: { fontFamily: "'Montserrat', Arial, sans-serif" } },
 ]
 
 const PALETTES = [
@@ -202,7 +204,7 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
           <h2 className="text-sm font-semibold text-gray-700">Police des documents</h2>
         </div>
         <div className="p-5">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {FONTS.map((f) => (
               <button
                 key={f.id}

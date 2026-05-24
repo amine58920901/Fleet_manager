@@ -12,6 +12,14 @@ Font.register({
   ],
 })
 
+Font.register({
+  family: "Montserrat",
+  fonts: [
+    { src: path.join(process.cwd(), "public/fonts/Montserrat-Regular.ttf"), fontWeight: 400 },
+    { src: path.join(process.cwd(), "public/fonts/Montserrat-Bold.ttf"), fontWeight: 700 },
+  ],
+})
+
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: "Plus Jakarta Sans", fontSize: 10, color: "#1e293b", backgroundColor: "#ffffff", paddingBottom: 70 },
   header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30, backgroundColor: "#1e3a8a", padding: 20, borderRadius: 8 },
@@ -62,13 +70,20 @@ interface InvoicePDFProps {
   settings: OrganizationSettings | null
 }
 
+const BUILTIN_FONTS = new Set(["Helvetica", "Times-Roman", "Courier"])
+
+function resolveFont(documentFont: string | null | undefined): string {
+  return BUILTIN_FONTS.has(documentFont ?? "") ? documentFont! : (documentFont ?? "Plus Jakarta Sans")
+}
+
 export function InvoicePDF({ invoice, settings }: InvoicePDFProps) {
   const companyName = settings?.companyName ?? "FleetManager"
+  const fontFamily = resolveFont(settings?.documentFont)
   const status = statusConfig[invoice.status] ?? statusConfig.UNPAID
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, { fontFamily }]}>
         {/* Header */}
         <View style={styles.header}>
           <View>
