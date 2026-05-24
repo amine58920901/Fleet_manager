@@ -103,7 +103,7 @@ export function ConditionPDF({ contract, settings }: ConditionPDFProps) {
         <View style={styles.header}>
           <View>
             {settings?.logoBase64 && (
-              <Image src={settings.logoBase64} style={{ width: 40, height: 40, marginBottom: 6, borderRadius: 4 }} />
+              <Image src={settings.logoBase64} style={{ width: 40, height: 40, marginBottom: 6 }} />
             )}
             <Text style={styles.companyName}>{companyName}</Text>
             {settings?.companyAddress && <Text style={styles.companyInfo}>{settings.companyAddress}</Text>}

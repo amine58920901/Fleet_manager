@@ -146,7 +146,7 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
               </div>
             )}
             <div>
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+              <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} className="hidden" />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -154,7 +154,7 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
               >
                 {logo ? "Changer le logo" : "Choisir un fichier"}
               </button>
-              <p className="text-xs text-gray-400 mt-1.5">PNG, JPG, SVG · max 2 Mo</p>
+              <p className="text-xs text-gray-400 mt-1.5">PNG, JPG, WEBP · max 2 Mo</p>
               <p className="text-xs text-gray-400">Recommandé : fond transparent, format carré</p>
             </div>
           </div>
