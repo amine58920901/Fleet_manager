@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Gauge, Calendar, Wrench, ExternalLink, Trash2, Search, Car } from "lucide-react"
+import { Gauge, Calendar, Wrench, ExternalLink, Trash2, Search, Car, LayoutGrid, List } from "lucide-react"
 import Link from "next/link"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import type { Vehicle, Contract, Driver } from "@prisma/client"
@@ -178,8 +178,86 @@ function VehicleCard({
   )
 }
 
+function VehicleRow({ vehicle, onRemove }: { vehicle: VehicleWithContracts; onRemove: (id: string) => void }) {
+  const [deleting, setDeleting] = useState(false)
+  const status = statusConfig[vehicle.status]
+  const activeContract = vehicle.contracts.find((c) => c.status === "ACTIVE")
+
+  async function handleDelete() {
+    if (!confirm(`Supprimer ${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate}) ?`)) return
+    setDeleting(true)
+    const res = await fetch(`/api/vehicles/${vehicle.id}`, { method: "DELETE" })
+    setDeleting(false)
+    if (res.ok) {
+      onRemove(vehicle.id)
+    } else {
+      const data = await res.json()
+      alert(data.error ?? "Erreur lors de la suppression")
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#f8f9ff] transition-colors border-b border-[#c5c5d3]/20 last:border-0">
+      {/* Thumbnail */}
+      <div className="w-14 h-10 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-[#dce1ff] to-[#b6c4ff]/50 flex items-center justify-center">
+        {vehicle.imageUrl ? (
+          <img src={vehicle.imageUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <Car className="h-5 w-5 text-[#00236f]/30" />
+        )}
+      </div>
+      {/* Name */}
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-sm text-[#0b1c30] truncate">
+          {vehicle.brand} {vehicle.model}
+        </p>
+        <p className="text-xs text-[#757682]">{vehicle.licensePlate} · {vehicle.year}</p>
+      </div>
+      {/* Status */}
+      <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase shrink-0 hidden sm:inline ${status.className}`}>
+        {status.label}
+      </span>
+      {/* Mileage */}
+      <div className="hidden md:flex items-center gap-1.5 text-sm text-[#444651] shrink-0">
+        <Gauge className="h-4 w-4 text-[#757682]" />
+        {vehicle.mileage.toLocaleString("fr-FR")} km
+      </div>
+      {/* Return date if rented */}
+      {vehicle.status === "RENTED" && activeContract && (
+        <div className="hidden lg:flex items-center gap-1.5 text-sm text-[#444651] shrink-0">
+          <Calendar className="h-4 w-4 text-[#757682]" />
+          {formatDate(activeContract.endDate)}
+        </div>
+      )}
+      {/* Daily rate */}
+      <p className="font-bold text-[#00236f] shrink-0 hidden sm:block">
+        {formatCurrency(Number(vehicle.dailyRate))}<span className="text-xs font-normal text-[#757682]">/j</span>
+      </p>
+      {/* Actions */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <Link
+          href={`/vehicles/${vehicle.id}`}
+          className="p-2 text-[#757682] hover:text-[#00236f] hover:bg-[#dce1ff] rounded-lg transition-all"
+          aria-label="Voir détails"
+        >
+          <ExternalLink className="h-4 w-4" />
+        </Link>
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="p-2 text-[#757682] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+          aria-label="Supprimer"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContracts[] }) {
   const [vehicles, setVehicles] = useState(initial)
+  const [view, setView] = useState<"grid" | "list">("grid")
   const [search, setSearch] = useState("")
 
   const filtered = search.trim()
@@ -194,9 +272,9 @@ export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContr
 
   return (
     <div className="space-y-6">
-      {/* Search + filter bar */}
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#c5c5d3]/30">
-        <div className="relative max-w-md">
+      {/* Toolbar */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#c5c5d3]/30 flex items-center justify-between gap-4 flex-wrap">
+        <div className="relative flex-1 min-w-48 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#757682]" />
           <input
             type="text"
@@ -206,20 +284,61 @@ export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContr
             className="w-full h-11 pl-10 pr-4 bg-[#f8f9ff] border border-[#c5c5d3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 focus:border-[#00236f] text-[#0b1c30] placeholder:text-[#757682] transition-all"
           />
         </div>
+        {/* View toggle */}
+        <div className="flex items-center gap-1 bg-[#0b1c30] rounded-xl p-1 shrink-0">
+          <button
+            onClick={() => setView("list")}
+            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+              view === "list" ? "bg-[#00236f] text-white" : "text-[#757682] hover:text-white"
+            }`}
+            aria-label="Vue liste"
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setView("grid")}
+            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+              view === "grid" ? "bg-[#00236f] text-white" : "text-[#757682] hover:text-white"
+            }`}
+            aria-label="Vue grille"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Grid */}
-      {filtered.length === 0 ? (
+      {/* Empty state */}
+      {filtered.length === 0 && (
         <div className="text-center py-16 text-[#444651]">
           <Car className="h-12 w-12 mx-auto mb-3 text-[#c5c5d3]" />
           <p className="text-base font-medium">
             {search ? "Aucun véhicule trouvé pour cette recherche" : "Aucun véhicule"}
           </p>
         </div>
-      ) : (
+      )}
+
+      {/* Grid view */}
+      {view === "grid" && filtered.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
           {filtered.map((v) => (
             <VehicleCard key={v.id} vehicle={v} onRemove={removeVehicle} />
+          ))}
+        </div>
+      )}
+
+      {/* List view */}
+      {view === "list" && filtered.length > 0 && (
+        <div className="bg-white rounded-2xl border border-[#c5c5d3]/30 shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#c5c5d3]/20 flex items-center gap-4">
+            <div className="w-14 shrink-0" />
+            <span className="flex-1 text-xs font-semibold text-[#757682] uppercase tracking-wider">Véhicule</span>
+            <span className="text-xs font-semibold text-[#757682] uppercase tracking-wider hidden sm:block w-24">Statut</span>
+            <span className="text-xs font-semibold text-[#757682] uppercase tracking-wider hidden md:block w-32">Kilométrage</span>
+            <span className="text-xs font-semibold text-[#757682] uppercase tracking-wider hidden sm:block w-24">Tarif/j</span>
+            <div className="w-20 shrink-0" />
+          </div>
+          {filtered.map((v) => (
+            <VehicleRow key={v.id} vehicle={v} onRemove={removeVehicle} />
           ))}
         </div>
       )}
