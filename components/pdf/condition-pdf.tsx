@@ -1,12 +1,15 @@
 import {
-  Document,
-  Page,
-  Text,
-  View,
-  Image,
-  StyleSheet,
+  Document, Page, Text, View, StyleSheet, Font, Image,
 } from "@react-pdf/renderer"
 import type { Contract, Vehicle, Driver, OrganizationSettings } from "@prisma/client"
+
+Font.register({
+  family: "Plus Jakarta Sans",
+  fonts: [
+    { src: "https://fonts.gstatic.com/s/plusjakartasans/v3/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.ttf", fontWeight: 400 },
+    { src: "https://fonts.gstatic.com/s/plusjakartasans/v3/LDIoaomQNQcsA88c7O9yZ4KMCoOg4IA70yyygA.ttf", fontWeight: 700 },
+  ],
+})
 
 const ZONES = [
   { id: "parechoc_av",  label: "Pare-choc avant" },
@@ -28,8 +31,36 @@ const ZONES = [
 
 type DamageEntry = { type: string; severity: string; note: string }
 type VehicleCondition = Record<string, DamageEntry>
-
 type ContractFull = Contract & { vehicle: Vehicle; driver: Driver }
+
+const styles = StyleSheet.create({
+  page: { padding: 40, fontFamily: "Plus Jakarta Sans", fontSize: 10, color: "#1e293b", paddingBottom: 70 },
+  header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30, backgroundColor: "#1e3a8a", padding: 20, borderRadius: 8 },
+  companyName: { fontSize: 20, fontWeight: 700, color: "#ffffff" },
+  companyInfo: { fontSize: 8, marginTop: 4, color: "rgba(255,255,255,0.8)" },
+  docTitle: { fontSize: 24, fontWeight: 700, color: "#ffffff", textAlign: "right" },
+  docId: { fontSize: 10, marginTop: 4, color: "rgba(255,255,255,0.85)", textAlign: "right" },
+  sectionRow: { flexDirection: "row", gap: 16, marginBottom: 20 },
+  card: { flex: 1, padding: 15, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, backgroundColor: "#f8fafc" },
+  cardTitle: { fontSize: 8, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 8, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 4 },
+  cardText: { fontSize: 10, marginBottom: 2, color: "#1e293b" },
+  detailsRow: { flexDirection: "row", gap: 10, marginBottom: 20 },
+  detailBox: { flex: 1, padding: 10, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 6, backgroundColor: "#f8fafc" },
+  detailLabel: { fontSize: 7, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 3 },
+  detailValue: { fontSize: 9, fontWeight: 700, color: "#1e293b" },
+  tableHeader: { flexDirection: "row", backgroundColor: "#1e3a8a", color: "#ffffff", padding: 8, borderRadius: 4, fontWeight: 700 },
+  tableRow: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#f1f5f9", padding: 8, alignItems: "center" },
+  tableRowDmg: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#f1f5f9", padding: 8, alignItems: "center", backgroundColor: "#fef2f2" },
+  statusBadge: { padding: 3, borderRadius: 4, fontSize: 8, fontWeight: 700 },
+  signatureSection: { marginTop: 24 },
+  signatureTitle: { fontSize: 8, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 12, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 4 },
+  signatureRow: { flexDirection: "row", gap: 16 },
+  signatureBox: { flex: 1, borderTopWidth: 1, borderTopColor: "#d1d5db", paddingTop: 8, marginTop: 52 },
+  signatureLabel: { fontSize: 8, fontWeight: 700, color: "#374151" },
+  signatureSub: { fontSize: 7, color: "#9ca3af", marginTop: 2 },
+  disclaimer: { fontSize: 8, color: "#64748b", marginBottom: 12, lineHeight: 1.5 },
+  footer: { position: "absolute", bottom: 30, left: 40, right: 40, borderTopWidth: 1, borderTopColor: "#e2e8f0", paddingTop: 10, flexDirection: "row", justifyContent: "space-between", fontSize: 8, color: "#94a3b8" },
+})
 
 function fmt(d: Date | string) {
   return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
@@ -39,67 +70,12 @@ function fmtNum(n: number) {
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")
 }
 
-function makeStyles(s: OrganizationSettings | null) {
-  const primary = s?.primaryColor ?? "#2563eb"
-  const secondary = s?.secondaryColor ?? "#1e40af"
-  const accent = s?.accentColor ?? "#eff6ff"
-  const fontFamily = (s?.documentFont ?? "Helvetica") as "Helvetica" | "Times-Roman" | "Courier"
-  const fontBold = fontFamily === "Times-Roman" ? "Times-Bold" : fontFamily === "Courier" ? "Courier-Bold" : "Helvetica-Bold"
-
-  return StyleSheet.create({
-    page: { fontFamily, fontSize: 10, color: "#1f2937", backgroundColor: "#ffffff", paddingBottom: 60 },
-    header: { backgroundColor: primary, padding: 24, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    headerLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
-    logo: { width: 48, height: 48, borderRadius: 6, backgroundColor: "rgba(255,255,255,0.2)" },
-    companyName: { color: "#ffffff", fontSize: 14, fontFamily: fontBold },
-    companyInfo: { color: "rgba(255,255,255,0.75)", fontSize: 8, marginTop: 2 },
-    docType: { color: "#ffffff", fontSize: 16, fontFamily: fontBold, textAlign: "right" },
-    docSub: { color: "rgba(255,255,255,0.75)", fontSize: 9, textAlign: "right", marginTop: 2 },
-    body: { padding: 24 },
-    infoRow: { flexDirection: "row", gap: 12, marginBottom: 14 },
-    infoBox: { flex: 1, backgroundColor: accent, borderRadius: 6, padding: 14 },
-    infoTitle: { fontSize: 8, color: primary, fontFamily: fontBold, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
-    infoText: { fontSize: 9, color: "#374151", lineHeight: 1.5 },
-    infoTextBold: { fontSize: 10, color: "#111827", fontFamily: fontBold, marginBottom: 3 },
-    detailsRow: { flexDirection: "row", gap: 8, marginBottom: 14 },
-    detailBox: { flex: 1, borderRadius: 4, padding: "7 10", backgroundColor: "#f9fafb", border: "1 solid #e5e7eb" },
-    detailLabel: { fontSize: 7, color: "#9ca3af", fontFamily: fontBold, textTransform: "uppercase", marginBottom: 2 },
-    detailValue: { fontSize: 9, color: "#111827", fontFamily: fontBold },
-    section: { marginBottom: 14 },
-    sectionTitle: { fontSize: 9, color: primary, fontFamily: fontBold, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6, paddingBottom: 4, borderBottom: `2 solid ${primary}` },
-    tableHeader: { flexDirection: "row", backgroundColor: primary, padding: "6 10" },
-    tableHeaderText: { color: "#ffffff", fontSize: 8, fontFamily: fontBold },
-    tableRow: { flexDirection: "row", padding: "5 10", borderBottom: "1 solid #f3f4f6" },
-    tableRowAlt: { flexDirection: "row", padding: "5 10", borderBottom: "1 solid #f3f4f6", backgroundColor: "#f9fafb" },
-    tableRowDmg: { flexDirection: "row", padding: "5 10", borderBottom: "1 solid #f3f4f6", backgroundColor: "#fff7ed" },
-    tableRowDmgGrave: { flexDirection: "row", padding: "5 10", borderBottom: "1 solid #f3f4f6", backgroundColor: "#fff1f2" },
-    colZone: { flex: 3 },
-    colStatus: { flex: 2 },
-    colDetail: { flex: 5 },
-    cellText: { fontSize: 9, color: "#374151" },
-    okText: { fontSize: 9, color: "#16a34a", fontFamily: fontBold },
-    dmgText: { fontSize: 9, color: "#ea580c", fontFamily: fontBold },
-    dmgGraveText: { fontSize: 9, color: "#dc2626", fontFamily: fontBold },
-    signatureArea: { marginTop: 20 },
-    signatureRow: { flexDirection: "row", gap: 16, marginTop: 4 },
-    signatureBox: { flex: 1 },
-    signatureLine: { borderTop: "1 solid #d1d5db", paddingTop: 6, marginTop: 52 },
-    signatureLabel: { fontSize: 8, color: "#374151", fontFamily: fontBold },
-    signatureSub: { fontSize: 7, color: "#9ca3af", marginTop: 2 },
-    disclaimer: { fontSize: 8, color: "#6b7280", marginBottom: 14, lineHeight: 1.5 },
-    footer: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "#f9fafb", borderTop: "1 solid #e5e7eb", padding: "10 24", flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    footerText: { fontSize: 8, color: "#9ca3af" },
-    footerBold: { fontSize: 8, color: secondary, fontFamily: fontBold },
-  })
-}
-
 interface ConditionPDFProps {
   contract: ContractFull
   settings: OrganizationSettings | null
 }
 
 export function ConditionPDF({ contract, settings }: ConditionPDFProps) {
-  const styles = makeStyles(settings)
   const companyName = settings?.companyName ?? "FleetManager"
   const condition = (contract.conditionStart ?? {}) as VehicleCondition
   const damagedCount = Object.keys(condition).length
@@ -107,128 +83,120 @@ export function ConditionPDF({ contract, settings }: ConditionPDFProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            {settings?.logoBase64 ? (
-              <Image src={settings.logoBase64} style={styles.logo} />
-            ) : (
-              <View style={styles.logo} />
+          <View>
+            {settings?.logoBase64 && (
+              <Image src={settings.logoBase64} style={{ width: 40, height: 40, marginBottom: 6, borderRadius: 4 }} />
             )}
-            <View>
-              <Text style={styles.companyName}>{companyName}</Text>
-              {settings?.companyAddress && <Text style={styles.companyInfo}>{settings.companyAddress}</Text>}
-              {settings?.companyPhone && <Text style={styles.companyInfo}>{settings.companyPhone}</Text>}
-            </View>
+            <Text style={styles.companyName}>{companyName}</Text>
+            {settings?.companyAddress && <Text style={styles.companyInfo}>{settings.companyAddress}</Text>}
           </View>
           <View>
-            <Text style={styles.docType}>ÉTAT DES LIEUX</Text>
-            <Text style={styles.docSub}>Départ · {contract.number}</Text>
-            <Text style={styles.docSub}>Le {fmt(contract.startDate)}</Text>
+            <Text style={styles.docTitle}>État des Lieux</Text>
+            <Text style={styles.docId}>{contract.number}</Text>
+            <Text style={styles.docId}>Édité le {fmt(contract.startDate)}</Text>
           </View>
         </View>
 
-        <View style={styles.body}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoTitle}>Véhicule</Text>
-              <Text style={styles.infoTextBold}>{contract.vehicle.brand} {contract.vehicle.model}</Text>
-              <Text style={styles.infoText}>Immatriculation : {contract.vehicle.licensePlate}</Text>
-              {contract.vehicle.color && <Text style={styles.infoText}>Couleur : {contract.vehicle.color}</Text>}
-              <Text style={styles.infoText}>Année : {contract.vehicle.year}</Text>
-            </View>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoTitle}>Locataire</Text>
-              <Text style={styles.infoTextBold}>{contract.driver.firstName} {contract.driver.lastName}</Text>
-              {contract.driver.licenseNumber && <Text style={styles.infoText}>Permis : {contract.driver.licenseNumber}</Text>}
-              {contract.driver.phone && <Text style={styles.infoText}>{contract.driver.phone}</Text>}
-              {contract.driver.email && <Text style={styles.infoText}>{contract.driver.email}</Text>}
-              {contract.driver.address && <Text style={styles.infoText}>{contract.driver.address}</Text>}
-            </View>
+        {/* Vehicle & Driver */}
+        <View style={styles.sectionRow}>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Véhicule</Text>
+            <Text style={[styles.cardText, { fontWeight: 700 }]}>{contract.vehicle.brand} {contract.vehicle.model}</Text>
+            <Text style={styles.cardText}>{contract.vehicle.licensePlate} · {contract.vehicle.color ?? ""} / {contract.vehicle.year}</Text>
           </View>
-
-          <View style={styles.detailsRow}>
-            <View style={styles.detailBox}>
-              <Text style={styles.detailLabel}>Date de départ</Text>
-              <Text style={styles.detailValue}>{fmt(contract.startDate)}</Text>
-            </View>
-            <View style={styles.detailBox}>
-              <Text style={styles.detailLabel}>Km au départ</Text>
-              <Text style={styles.detailValue}>{contract.mileageStart != null ? fmtNum(contract.mileageStart) : "—"} km</Text>
-            </View>
-            <View style={styles.detailBox}>
-              <Text style={styles.detailLabel}>Carburant</Text>
-              <Text style={styles.detailValue}>{contract.fuelLevelStart ?? "—"}</Text>
-            </View>
-            {contract.depositAmount && (
-              <View style={styles.detailBox}>
-                <Text style={styles.detailLabel}>Caution</Text>
-                <Text style={styles.detailValue}>{Number(contract.depositAmount).toFixed(2)} €</Text>
-              </View>
-            )}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Locataire</Text>
+            <Text style={[styles.cardText, { fontWeight: 700 }]}>{contract.driver.firstName} {contract.driver.lastName}</Text>
+            {contract.driver.licenseNumber && <Text style={styles.cardText}>{contract.driver.licenseNumber}</Text>}
+            {contract.driver.phone && <Text style={styles.cardText}>{contract.driver.phone}</Text>}
           </View>
+        </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {`État du véhicule au départ — ${damagedCount === 0 ? "Aucun dommage constaté" : `${damagedCount} zone${damagedCount > 1 ? "s" : ""} endommagée${damagedCount > 1 ? "s" : ""}`}`}
-            </Text>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderText, styles.colZone]}>Zone</Text>
-              <Text style={[styles.tableHeaderText, styles.colStatus]}>État</Text>
-              <Text style={[styles.tableHeaderText, styles.colDetail]}>Détails</Text>
-            </View>
-            {ZONES.map((zone, i) => {
-              const dmg = condition[zone.id]
-              const rowStyle = dmg
-                ? (dmg.severity === "grave" ? styles.tableRowDmgGrave : styles.tableRowDmg)
-                : i % 2 === 1 ? styles.tableRowAlt : styles.tableRow
-              const statusStyle = dmg
-                ? (dmg.severity === "grave" ? styles.dmgGraveText : styles.dmgText)
-                : styles.okText
-              const detail = dmg
-                ? `${dmg.type.charAt(0).toUpperCase() + dmg.type.slice(1)} · ${dmg.severity}${dmg.note ? " — " + dmg.note : ""}`
-                : "—"
-              return (
-                <View key={zone.id} style={rowStyle}>
-                  <Text style={[styles.cellText, styles.colZone]}>{zone.label}</Text>
-                  <Text style={[statusStyle, styles.colStatus]}>{dmg ? "ENDOMMAGÉ" : "RAS"}</Text>
-                  <Text style={[styles.cellText, styles.colDetail, { color: dmg ? "#9a3412" : "#9ca3af" }]}>{detail}</Text>
-                </View>
-              )
-            })}
+        {/* Details row */}
+        <View style={styles.detailsRow}>
+          <View style={styles.detailBox}>
+            <Text style={styles.detailLabel}>Date de départ</Text>
+            <Text style={styles.detailValue}>{fmt(contract.startDate)}</Text>
           </View>
+          <View style={styles.detailBox}>
+            <Text style={styles.detailLabel}>Km au départ</Text>
+            <Text style={styles.detailValue}>{contract.mileageStart != null ? fmtNum(contract.mileageStart) : "—"} km</Text>
+          </View>
+          <View style={styles.detailBox}>
+            <Text style={styles.detailLabel}>Carburant</Text>
+            <Text style={styles.detailValue}>{contract.fuelLevelStart ?? "—"}</Text>
+          </View>
+          {contract.depositAmount && (
+            <View style={styles.detailBox}>
+              <Text style={styles.detailLabel}>Caution</Text>
+              <Text style={styles.detailValue}>{Number(contract.depositAmount).toFixed(2)} €</Text>
+            </View>
+          )}
+        </View>
 
-          <View style={styles.signatureArea}>
-            <Text style={styles.sectionTitle}>Signatures</Text>
-            <Text style={styles.disclaimer}>
-              {`Je soussigné(e) déclare avoir pris connaissance de l'état du véhicule tel que décrit ci-dessus et l'accepte sans réserve.`}
-            </Text>
-            <View style={styles.signatureRow}>
-              <View style={styles.signatureBox}>
-                <View style={styles.signatureLine}>
-                  <Text style={styles.signatureLabel}>Signature du loueur</Text>
-                  <Text style={styles.signatureSub}>{companyName}</Text>
+        {/* Zones table */}
+        <View style={styles.tableHeader}>
+          <Text style={{ flex: 2, color: "#ffffff", fontWeight: 700 }}>Zone</Text>
+          <Text style={{ flex: 1, textAlign: "center", color: "#ffffff", fontWeight: 700 }}>État</Text>
+          <Text style={{ flex: 2, textAlign: "right", color: "#ffffff", fontWeight: 700 }}>Détails</Text>
+        </View>
+
+        {ZONES.map((zone) => {
+          const dmg = condition[zone.id]
+          const isDmg = Boolean(dmg)
+          const isGrave = dmg?.severity === "grave"
+          const rowStyle = isDmg
+            ? [styles.tableRowDmg, isGrave ? { backgroundColor: "#fef2f2" } : {}]
+            : styles.tableRow
+          const statusBg = isDmg ? (isGrave ? "#fef2f2" : "#fef2f2") : "#f0fdf4"
+          const statusColor = isDmg ? (isGrave ? "#991b1b" : "#991b1b") : "#166534"
+          const statusLabel = isDmg ? "ENDOMMAGÉ" : "RAS"
+          const detail = dmg
+            ? `${dmg.type.charAt(0).toUpperCase() + dmg.type.slice(1)} — ${dmg.severity}${dmg.note ? " · " + dmg.note : ""}`
+            : "—"
+
+          return (
+            <View key={zone.id} style={rowStyle}>
+              <Text style={{ flex: 2 }}>{zone.label}</Text>
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
+                  <Text style={{ color: statusColor }}>{statusLabel}</Text>
                 </View>
               </View>
-              <View style={styles.signatureBox}>
-                <View style={styles.signatureLine}>
-                  <Text style={styles.signatureLabel}>Signature du locataire</Text>
-                  <Text style={styles.signatureSub}>{contract.driver.firstName} {contract.driver.lastName}</Text>
-                </View>
-              </View>
-              <View style={styles.signatureBox}>
-                <View style={styles.signatureLine}>
-                  <Text style={styles.signatureLabel}>Date et lieu</Text>
-                  <Text style={styles.signatureSub}>À compléter lors de la signature</Text>
-                </View>
-              </View>
+              <Text style={{ flex: 2, textAlign: "right", color: isDmg ? "#991b1b" : "#94a3b8" }}>{detail}</Text>
+            </View>
+          )
+        })}
+
+        {/* Signatures */}
+        <View style={styles.signatureSection}>
+          <Text style={styles.signatureTitle}>
+            {`État au départ — ${damagedCount === 0 ? "Aucun dommage constaté" : `${damagedCount} zone${damagedCount > 1 ? "s" : ""} endommagée${damagedCount > 1 ? "s" : ""}`}`}
+          </Text>
+          <Text style={styles.disclaimer}>
+            Je soussigné(e) déclare avoir pris connaissance de l&apos;état du véhicule tel que décrit ci-dessus et l&apos;accepte sans réserve.
+          </Text>
+          <View style={styles.signatureRow}>
+            <View style={styles.signatureBox}>
+              <Text style={styles.signatureLabel}>Signature du loueur</Text>
+              <Text style={styles.signatureSub}>{companyName}</Text>
+            </View>
+            <View style={styles.signatureBox}>
+              <Text style={styles.signatureLabel}>Signature du locataire</Text>
+              <Text style={styles.signatureSub}>{contract.driver.firstName} {contract.driver.lastName}</Text>
+            </View>
+            <View style={styles.signatureBox}>
+              <Text style={styles.signatureLabel}>Date &amp; lieu</Text>
+              <Text style={styles.signatureSub}>À compléter lors de la signature</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>{companyName}</Text>
-          <Text style={styles.footerText}>État des lieux de départ</Text>
-          <Text style={styles.footerBold}>{contract.number}</Text>
+          <Text>{companyName}{settings?.siret ? ` — SIRET : ${settings.siret}` : ""}</Text>
+          <Text>© {new Date().getFullYear()} {companyName}</Text>
         </View>
       </Page>
     </Document>

@@ -1,66 +1,50 @@
 import {
-  Document,
-  Page,
-  Text,
-  View,
-  Image,
-  StyleSheet,
+  Document, Page, Text, View, StyleSheet, Font, Image,
 } from "@react-pdf/renderer"
 import type { Quote, OrganizationSettings } from "@prisma/client"
 
-function makeStyles(s: OrganizationSettings | null) {
-  const primary = s?.primaryColor ?? "#2563eb"
-  const secondary = s?.secondaryColor ?? "#1e40af"
-  const accent = s?.accentColor ?? "#eff6ff"
-  const fontFamily = (s?.documentFont ?? "Helvetica") as "Helvetica" | "Times-Roman" | "Courier"
-  const fontBold = fontFamily === "Times-Roman" ? "Times-Bold" : fontFamily === "Courier" ? "Courier-Bold" : "Helvetica-Bold"
+Font.register({
+  family: "Plus Jakarta Sans",
+  fonts: [
+    { src: "https://fonts.gstatic.com/s/plusjakartasans/v3/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.ttf", fontWeight: 400 },
+    { src: "https://fonts.gstatic.com/s/plusjakartasans/v3/LDIoaomQNQcsA88c7O9yZ4KMCoOg4IA70yyygA.ttf", fontWeight: 700 },
+  ],
+})
 
-  return StyleSheet.create({
-    page: { fontFamily, fontSize: 10, color: "#1f2937", backgroundColor: "#ffffff", paddingBottom: 60 },
-    header: { backgroundColor: primary, padding: 24, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    headerLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
-    logo: { width: 48, height: 48, borderRadius: 6, backgroundColor: "rgba(255,255,255,0.2)" },
-    companyName: { color: "#ffffff", fontSize: 14, fontFamily: fontBold },
-    companyInfo: { color: "rgba(255,255,255,0.75)", fontSize: 8, marginTop: 2 },
-    docType: { color: "#ffffff", fontSize: 20, fontFamily: fontBold, textAlign: "right" },
-    docNumber: { color: "rgba(255,255,255,0.75)", fontSize: 9, textAlign: "right", marginTop: 2 },
-    body: { padding: 24 },
-    infoRow: { flexDirection: "row", gap: 12, marginBottom: 20 },
-    infoBox: { flex: 1, backgroundColor: accent, borderRadius: 6, padding: 14 },
-    infoTitle: { fontSize: 8, color: primary, fontFamily: fontBold, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
-    infoText: { fontSize: 9, color: "#374151", lineHeight: 1.5 },
-    infoTextBold: { fontSize: 10, color: "#111827", fontFamily: fontBold, marginBottom: 3 },
-    tableHeader: { flexDirection: "row", backgroundColor: primary, borderRadius: 4, padding: "8 12" },
-    tableHeaderText: { color: "#ffffff", fontSize: 9, fontFamily: fontBold },
-    tableRow: { flexDirection: "row", padding: "8 12", borderBottom: "1 solid #f3f4f6" },
-    tableText: { color: "#374151", fontSize: 9 },
-    col1: { flex: 3 },
-    col2: { flex: 1, textAlign: "center" },
-    col3: { flex: 1.5, textAlign: "right" },
-    totalsBox: { marginTop: 16, marginLeft: "auto", width: 240 },
-    totalRow: { flexDirection: "row", justifyContent: "space-between", padding: "5 0", borderBottom: "1 solid #e5e7eb" },
-    totalLabel: { fontSize: 9, color: "#6b7280" },
-    totalValue: { fontSize: 9, color: "#374151" },
-    grandTotalRow: { flexDirection: "row", justifyContent: "space-between", backgroundColor: primary, borderRadius: 4, padding: "10 12", marginTop: 6 },
-    grandTotalLabel: { fontSize: 11, color: "#ffffff", fontFamily: fontBold },
-    grandTotalValue: { fontSize: 11, color: "#ffffff", fontFamily: fontBold },
-    installmentBox: { marginTop: 8, backgroundColor: accent, borderRadius: 4, padding: "8 12", flexDirection: "row", justifyContent: "space-between" },
-    installmentLabel: { fontSize: 9, color: primary, fontFamily: fontBold },
-    installmentValue: { fontSize: 9, color: primary, fontFamily: fontBold },
-    notesBox: { marginTop: 20, padding: 14, backgroundColor: "#f9fafb", borderRadius: 6, borderLeft: `3 solid ${primary}` },
-    notesTitle: { fontSize: 8, color: primary, fontFamily: fontBold, marginBottom: 4 },
-    notesText: { fontSize: 9, color: "#6b7280", lineHeight: 1.5 },
-    footer: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "#f9fafb", borderTop: "1 solid #e5e7eb", padding: "10 24", flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    footerText: { fontSize: 8, color: "#9ca3af" },
-    footerBold: { fontSize: 8, color: secondary, fontFamily: fontBold },
-  })
-}
+const styles = StyleSheet.create({
+  page: { padding: 40, fontFamily: "Plus Jakarta Sans", fontSize: 10, color: "#1e293b", paddingBottom: 70 },
+  header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30, backgroundColor: "#1e3a8a", padding: 20, borderRadius: 8 },
+  companyName: { fontSize: 20, fontWeight: 700, color: "#ffffff" },
+  companyInfo: { fontSize: 8, marginTop: 4, color: "rgba(255,255,255,0.8)" },
+  docTitle: { fontSize: 24, fontWeight: 700, color: "#ffffff", textAlign: "right" },
+  docId: { fontSize: 10, marginTop: 4, color: "rgba(255,255,255,0.85)", textAlign: "right" },
+  sectionRow: { flexDirection: "row", gap: 16, marginBottom: 20 },
+  card: { flex: 1, padding: 15, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, backgroundColor: "#f8fafc" },
+  cardTitle: { fontSize: 8, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 8, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 4 },
+  cardText: { fontSize: 10, marginBottom: 2, color: "#1e293b" },
+  bold: { fontWeight: 700, color: "#1e3a8a" },
+  tableHeader: { flexDirection: "row", backgroundColor: "#1e3a8a", color: "#ffffff", padding: 8, borderRadius: 4, fontWeight: 700, marginTop: 20 },
+  tableRow: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#f1f5f9", padding: 8 },
+  col1: { flex: 3 },
+  col2: { flex: 1, textAlign: "center" },
+  col3: { flex: 1, textAlign: "right" },
+  totalSection: { marginTop: 20, alignItems: "flex-end" },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4, paddingVertical: 3, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
+  totalLabel: { fontSize: 9, color: "#64748b" },
+  totalValue: { fontSize: 9, color: "#374151" },
+  totalBox: { backgroundColor: "#1e3a8a", color: "#ffffff", padding: 15, borderRadius: 8, width: 210, marginTop: 8 },
+  totalBoxRow: { flexDirection: "row", justifyContent: "space-between" },
+  installmentBox: { marginTop: 8, padding: 10, backgroundColor: "#eff6ff", borderRadius: 4, flexDirection: "row", justifyContent: "space-between" },
+  notesBox: { marginTop: 16, padding: 12, backgroundColor: "#f8fafc", borderRadius: 6, borderLeftWidth: 3, borderLeftColor: "#1e3a8a" },
+  notesTitle: { fontSize: 8, fontWeight: 700, color: "#1e3a8a", marginBottom: 4 },
+  notesText: { fontSize: 9, color: "#64748b", lineHeight: 1.5 },
+  footer: { position: "absolute", bottom: 30, left: 40, right: 40, borderTopWidth: 1, borderTopColor: "#e2e8f0", paddingTop: 10, flexDirection: "row", justifyContent: "space-between", fontSize: 8, color: "#94a3b8" },
+})
 
 function formatMoney(n: unknown) {
   const num = Number(n)
   const [int, dec] = num.toFixed(2).split(".")
-  const intFmt = int.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
-  return `${intFmt},${dec} €`
+  return `${int.replace(/\B(?=(\d{3})+(?!\d))/g, " ")},${dec} €`
 }
 
 function fmt(d: Date | string) {
@@ -73,71 +57,74 @@ interface QuotePDFProps {
 }
 
 export function QuotePDF({ quote, settings }: QuotePDFProps) {
-  const styles = makeStyles(settings)
   const companyName = settings?.companyName ?? "FleetManager"
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            {settings?.logoBase64 ? (
-              <Image src={settings.logoBase64} style={styles.logo} />
-            ) : (
-              <View style={styles.logo} />
+          <View>
+            {settings?.logoBase64 && (
+              <Image src={settings.logoBase64} style={{ width: 40, height: 40, marginBottom: 6, borderRadius: 4 }} />
             )}
-            <View>
-              <Text style={styles.companyName}>{companyName}</Text>
-              {settings?.companyAddress && <Text style={styles.companyInfo}>{settings.companyAddress}</Text>}
-              {settings?.companyPhone && <Text style={styles.companyInfo}>{settings.companyPhone}</Text>}
-            </View>
+            <Text style={styles.companyName}>{companyName}</Text>
+            {settings?.companyAddress && <Text style={styles.companyInfo}>{settings.companyAddress}</Text>}
+            {settings?.companyPhone && <Text style={styles.companyInfo}>{settings.companyPhone}</Text>}
           </View>
           <View>
-            <Text style={styles.docType}>DEVIS</Text>
-            <Text style={styles.docNumber}>{quote.number}</Text>
-            <Text style={styles.docNumber}>Le {fmt(quote.createdAt)}</Text>
+            <Text style={styles.docTitle}>Devis</Text>
+            <Text style={styles.docId}>{quote.number}</Text>
+            <Text style={styles.docId}>Le {fmt(quote.createdAt)}</Text>
           </View>
         </View>
 
-        <View style={styles.body}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoTitle}>Émetteur</Text>
-              <Text style={styles.infoTextBold}>{companyName}</Text>
-              {settings?.companyAddress && <Text style={styles.infoText}>{settings.companyAddress}</Text>}
-              {settings?.companyPhone && <Text style={styles.infoText}>{settings.companyPhone}</Text>}
-              {settings?.companyEmail && <Text style={styles.infoText}>{settings.companyEmail}</Text>}
-            </View>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoTitle}>Client</Text>
-              <Text style={styles.infoTextBold}>{quote.clientName}</Text>
-              {quote.clientAddress && <Text style={styles.infoText}>{quote.clientAddress}</Text>}
-              {quote.clientPhone && <Text style={styles.infoText}>{quote.clientPhone}</Text>}
-              {quote.clientEmail && <Text style={styles.infoText}>{quote.clientEmail}</Text>}
-            </View>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoTitle}>Période</Text>
-              <Text style={styles.infoText}>Du {fmt(quote.startDate)}</Text>
-              <Text style={styles.infoText}>Au {fmt(quote.endDate)}</Text>
-              <Text style={styles.infoTextBold}>{quote.days} jour{quote.days > 1 ? "s" : ""}</Text>
-              {quote.validUntil && (
-                <Text style={[styles.infoText, { marginTop: 6 }]}>Valable jusqu&apos;au {fmt(quote.validUntil)}</Text>
-              )}
-            </View>
+        {/* Info cards */}
+        <View style={styles.sectionRow}>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Émetteur</Text>
+            <Text style={[styles.cardText, { fontWeight: 700 }]}>{companyName}</Text>
+            {settings?.companyAddress && <Text style={styles.cardText}>{settings.companyAddress}</Text>}
+            {settings?.companyPhone && <Text style={styles.cardText}>{settings.companyPhone}</Text>}
+            {settings?.companyEmail && <Text style={styles.cardText}>{settings.companyEmail}</Text>}
           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Client</Text>
+            <Text style={[styles.cardText, { fontWeight: 700 }]}>{quote.clientName}</Text>
+            {quote.clientAddress && <Text style={styles.cardText}>{quote.clientAddress}</Text>}
+            {quote.clientPhone && <Text style={styles.cardText}>{quote.clientPhone}</Text>}
+            {quote.clientEmail && <Text style={styles.cardText}>{quote.clientEmail}</Text>}
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Période</Text>
+            <Text style={styles.cardText}>Du {fmt(quote.startDate)}</Text>
+            <Text style={styles.cardText}>Au {fmt(quote.endDate)}</Text>
+            <Text style={[styles.cardText, styles.bold, { marginTop: 6 }]}>
+              {quote.days} jour{quote.days > 1 ? "s" : ""}
+            </Text>
+            {quote.validUntil && (
+              <Text style={[styles.cardText, { marginTop: 4, fontSize: 9, color: "#64748b" }]}>
+                Valable jusqu&apos;au {fmt(quote.validUntil)}
+              </Text>
+            )}
+          </View>
+        </View>
 
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderText, styles.col1]}>Véhicule</Text>
-            <Text style={[styles.tableHeaderText, styles.col2]}>Durée</Text>
-            <Text style={[styles.tableHeaderText, styles.col3]}>Montant HT</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={[styles.tableText, styles.col1]}>{quote.vehicleDesc}</Text>
-            <Text style={[styles.tableText, styles.col2]}>{quote.days}j</Text>
-            <Text style={[styles.tableText, styles.col3]}>{formatMoney(quote.subtotal)}</Text>
-          </View>
+        {/* Table */}
+        <View style={styles.tableHeader}>
+          <Text style={[styles.col1, { color: "#ffffff", fontWeight: 700 }]}>Véhicule</Text>
+          <Text style={[styles.col2, { color: "#ffffff", fontWeight: 700 }]}>Durée</Text>
+          <Text style={[styles.col3, { color: "#ffffff", fontWeight: 700 }]}>Montant HT</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={styles.col1}>{quote.vehicleDesc}</Text>
+          <Text style={[styles.col2, { color: "#374151" }]}>{quote.days}j</Text>
+          <Text style={[styles.col3, { color: "#374151" }]}>{formatMoney(quote.subtotal)}</Text>
+        </View>
 
-          <View style={styles.totalsBox}>
+        {/* Totals */}
+        <View style={styles.totalSection}>
+          <View style={{ width: 210 }}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Sous-total HT</Text>
               <Text style={styles.totalValue}>{formatMoney(quote.subtotal)}</Text>
@@ -154,30 +141,31 @@ export function QuotePDF({ quote, settings }: QuotePDFProps) {
               <Text style={styles.totalLabel}>TVA ({Number(quote.taxRate)}%)</Text>
               <Text style={styles.totalValue}>{formatMoney(quote.taxAmount)}</Text>
             </View>
-            <View style={styles.grandTotalRow}>
-              <Text style={styles.grandTotalLabel}>Total TTC</Text>
-              <Text style={styles.grandTotalValue}>{formatMoney(quote.total)}</Text>
+            <View style={styles.totalBox}>
+              <View style={styles.totalBoxRow}>
+                <Text style={{ fontWeight: 700, color: "#ffffff" }}>Total TTC</Text>
+                <Text style={{ fontSize: 16, fontWeight: 700, color: "#ffffff" }}>{formatMoney(quote.total)}</Text>
+              </View>
             </View>
             {quote.installmentAmount && quote.totalInstallments && (
               <View style={styles.installmentBox}>
-                <Text style={styles.installmentLabel}>{quote.totalInstallments} mensualités</Text>
-                <Text style={styles.installmentValue}>{formatMoney(quote.installmentAmount)} / mois</Text>
+                <Text style={{ fontSize: 9, fontWeight: 700, color: "#1e3a8a" }}>{quote.totalInstallments} mensualités</Text>
+                <Text style={{ fontSize: 9, fontWeight: 700, color: "#1e3a8a" }}>{formatMoney(quote.installmentAmount)} / mois</Text>
               </View>
             )}
           </View>
-
-          {quote.notes && (
-            <View style={styles.notesBox}>
-              <Text style={styles.notesTitle}>Notes</Text>
-              <Text style={styles.notesText}>{quote.notes}</Text>
-            </View>
-          )}
         </View>
 
+        {quote.notes && (
+          <View style={styles.notesBox}>
+            <Text style={styles.notesTitle}>Notes</Text>
+            <Text style={styles.notesText}>{quote.notes}</Text>
+          </View>
+        )}
+
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>{companyName}</Text>
-          {settings?.siret && <Text style={styles.footerText}>SIRET : {settings.siret}</Text>}
-          <Text style={styles.footerBold}>{quote.number}</Text>
+          <Text>{companyName}{settings?.siret ? ` — SIRET : ${settings.siret}` : ""}</Text>
+          <Text>{quote.validUntil ? `Valable jusqu'au ${fmt(quote.validUntil)}` : `© ${new Date().getFullYear()} ${companyName}`}</Text>
         </View>
       </Page>
     </Document>
