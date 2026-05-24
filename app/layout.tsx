@@ -1,12 +1,13 @@
 import type { Metadata } from "next"
-import { Geist } from "next/font/google"
+import { Plus_Jakarta_Sans } from "next/font/google"
 import { Toaster } from "sonner"
 import { Providers } from "./providers"
 import "./globals.css"
 
-const geist = Geist({
-  variable: "--font-geist-sans",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 })
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${geist.variable} h-full antialiased`}>
+    <html lang="fr" className={`${jakarta.variable} h-full antialiased`}>
       <body className="min-h-full">
         <Providers>{children}</Providers>
         <Toaster richColors position="top-right" />

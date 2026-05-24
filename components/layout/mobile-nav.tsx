@@ -27,8 +27,10 @@ function NavLink({
       href={href}
       onClick={onClose}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-        isActive ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white hover:bg-gray-800"
+        "flex items-center gap-3 px-6 py-3 text-sm font-semibold tracking-wide transition-all duration-200",
+        isActive
+          ? "bg-[#1e3a8a] text-[#90a8ff] border-l-4 border-[#6cf8bb] rounded-r-lg"
+          : "text-[#b6c4ff] hover:text-white hover:bg-white/10 border-l-4 border-transparent"
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -48,10 +50,10 @@ export function MobileNav() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="lg:hidden p-2 rounded-lg hover:bg-[#eff4ff] transition-colors"
         aria-label="Ouvrir le menu"
       >
-        <Menu className="h-5 w-5 text-gray-600" />
+        <Menu className="h-5 w-5 text-[#444651]" />
       </button>
 
       {open && (
@@ -60,18 +62,18 @@ export function MobileNav() {
 
       <aside
         className={cn(
-          "lg:hidden fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-50 flex flex-col transition-transform duration-300 ease-in-out",
+          "lg:hidden fixed left-0 top-0 h-full w-[260px] bg-[#00236f] text-white z-50 flex flex-col transition-transform duration-300 ease-in-out shadow-xl",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="px-6 py-5 border-b border-gray-800 flex items-center justify-between flex-shrink-0">
-          <h1 className="text-lg font-bold text-white">FleetManager</h1>
-          <button onClick={close} className="text-gray-400 hover:text-white transition-colors">
+        <div className="px-6 py-8 flex items-center justify-between shrink-0">
+          <h1 className="text-xl font-bold text-white">FleetManager</h1>
+          <button onClick={close} className="text-[#b6c4ff] hover:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto">
           {navItems.map((item) => (
             <NavLink key={item.href} {...item} pathname={pathname} onClose={close} />
           ))}
@@ -80,7 +82,7 @@ export function MobileNav() {
           ))}
         </nav>
 
-        <div className="px-3 py-4 border-t border-gray-800 space-y-1 flex-shrink-0">
+        <div className="border-t border-white/10 pt-2 pb-6 space-y-0.5 shrink-0">
           {bottomNavItems.map((item) => (
             <NavLink key={item.href} {...item} pathname={pathname} onClose={close} />
           ))}

@@ -210,33 +210,38 @@ interface ConditionDisplayProps {
 
 export function ConditionDisplay({ condition }: ConditionDisplayProps) {
   if (!condition || Object.keys(condition).length === 0) {
-    return <p className="text-sm text-gray-400 italic">Aucun dommage enregistré</p>
+    return <p className="text-sm text-[#757682] italic">Aucun dommage enregistré</p>
   }
 
   return (
     <div className="space-y-2">
       {Object.entries(condition).map(([zoneId, damage]) => {
         const zone = ZONES.find((z) => z.id === zoneId)
-        const severityColor =
+        const borderColor =
           damage.severity === "grave"
-            ? "text-red-600 bg-red-50 border-red-200"
+            ? "border-red-500"
             : damage.severity === "moyen"
-            ? "text-orange-600 bg-orange-50 border-orange-200"
-            : "text-yellow-700 bg-yellow-50 border-yellow-200"
+            ? "border-orange-400"
+            : "border-[#ffb95f]"
+        const subtextColor =
+          damage.severity === "grave"
+            ? "text-red-600"
+            : damage.severity === "moyen"
+            ? "text-orange-600"
+            : "text-[#653e00]"
 
         return (
           <div
             key={zoneId}
-            className={`flex items-start gap-3 rounded-lg border px-3 py-2.5 ${severityColor}`}
+            className={`flex items-start gap-3 px-4 py-3 bg-[#ffddb8]/10 border-l-4 ${borderColor} rounded-r-xl hover:bg-[#ffddb8]/20 transition-all`}
           >
-            <span className="mt-1 shrink-0 w-2 h-2 rounded-full bg-current opacity-60" />
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-800">{zone?.label ?? zoneId}</p>
-              <p className="text-xs capitalize">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-[#0b1c30]">{zone?.label ?? zoneId}</p>
+              <p className={`text-xs capitalize mt-0.5 ${subtextColor}`}>
                 {damage.type} · {damage.severity}
               </p>
               {damage.note && (
-                <p className="mt-0.5 text-xs text-gray-500">{damage.note}</p>
+                <p className="mt-1 text-xs text-[#444651]">{damage.note}</p>
               )}
             </div>
           </div>

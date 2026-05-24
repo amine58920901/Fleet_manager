@@ -56,11 +56,11 @@ export function ContractActions({ contract }: { contract: ContractWithRelations 
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 flex-wrap">
         {contract.status === "ACTIVE" && (
           <button
             onClick={() => setShowClose(true)}
-            className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2.5 bg-[#00236f]/5 text-[#00236f] border border-[#00236f]/20 rounded-lg text-sm font-semibold hover:bg-[#00236f]/10 transition-all active:scale-95"
           >
             Clôturer
           </button>
@@ -68,7 +68,7 @@ export function ContractActions({ contract }: { contract: ContractWithRelations 
         <button
           onClick={handleDelete}
           disabled={loading}
-          className="px-3 py-1.5 text-sm border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
+          className="px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-semibold transition-all active:scale-95 disabled:opacity-50"
         >
           Supprimer
         </button>
@@ -77,46 +77,47 @@ export function ContractActions({ contract }: { contract: ContractWithRelations 
       {showClose && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
-
-            {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
               <div>
-                <h2 className="font-semibold text-gray-900">Clôturer le contrat</h2>
-                <p className="text-sm text-gray-500 mt-0.5">
+                <h2 className="font-semibold text-[#0b1c30]">Clôturer le contrat</h2>
+                <p className="text-sm text-[#444651] mt-0.5">
                   {contract.vehicle.brand} {contract.vehicle.model} · {contract.number}
                 </p>
               </div>
               <button
                 onClick={() => setShowClose(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-[#757682] hover:text-[#0b1c30] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Body */}
             <div className="overflow-y-auto p-6 space-y-6">
-
-              {/* Km + carburant */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Kilométrage & carburant au retour</h3>
+                <h3 className="text-sm font-semibold text-[#0b1c30] mb-3">
+                  Kilométrage & carburant au retour
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Kilométrage retour *</label>
+                    <label className="block text-xs font-medium text-[#444651] mb-1">
+                      Kilométrage retour *
+                    </label>
                     <input
                       type="number"
                       placeholder="Ex : 45 000"
                       value={mileageEnd}
                       onChange={(e) => setMileageEnd(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-[#c5c5d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00236f]/30 focus:border-[#00236f]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Niveau carburant</label>
+                    <label className="block text-xs font-medium text-[#444651] mb-1">
+                      Niveau carburant
+                    </label>
                     <select
                       value={fuelEnd}
                       onChange={(e) => setFuelEnd(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full px-3 py-2 border border-[#c5c5d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00236f]/30 bg-white"
                     >
                       <option value="">—</option>
                       <option>Plein</option>
@@ -129,38 +130,37 @@ export function ContractActions({ contract }: { contract: ContractWithRelations 
                 </div>
               </div>
 
-              {/* Dommages départ (lecture seule) */}
               {conditionStart && Object.keys(conditionStart).length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                  <h3 className="text-sm font-semibold text-[#0b1c30] mb-3">
                     Dommages enregistrés au départ
                   </h3>
                   <ConditionDisplay condition={conditionStart} />
                 </div>
               )}
 
-              {/* État retour */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-1">État du véhicule au retour</h3>
-                <p className="text-xs text-gray-400 mb-3">
+                <h3 className="text-sm font-semibold text-[#0b1c30] mb-1">
+                  État du véhicule au retour
+                </h3>
+                <p className="text-xs text-[#757682] mb-3">
                   Signalez tout nouveau dommage constaté lors de la restitution.
                 </p>
                 <VehicleConditionForm value={conditionEnd} onChange={setConditionEnd} />
               </div>
             </div>
 
-            {/* Footer */}
             <div className="flex gap-3 px-6 py-4 border-t shrink-0">
               <button
                 onClick={handleClose}
                 disabled={loading}
-                className="flex-1 bg-green-600 text-white py-2.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                className="flex-1 bg-[#006c49] text-white py-2.5 rounded-lg font-semibold hover:bg-[#005236] disabled:opacity-50 transition-colors"
               >
                 {loading ? "Clôture en cours..." : "Confirmer la clôture"}
               </button>
               <button
                 onClick={() => setShowClose(false)}
-                className="px-6 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="px-6 py-2.5 border border-[#c5c5d3] rounded-lg text-sm font-semibold hover:bg-[#f8f9ff] transition-colors"
               >
                 Annuler
               </button>

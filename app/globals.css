@@ -117,14 +117,24 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.vehicle-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.vehicle-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0px 20px 40px rgba(15, 23, 42, 0.08);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-jakarta), sans-serif;
   }
   html {
     @apply font-sans;
+    font-family: var(--font-jakarta), sans-serif;
   }
 }

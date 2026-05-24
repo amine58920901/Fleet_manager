@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { PageHeader } from "@/components/layout/page-header"
-import { AddVehicleDialog } from "@/components/vehicles/add-vehicle-dialog"
 import { VehiclesGrid } from "@/components/vehicles/vehicles-grid"
 import { StatusFilter } from "@/components/ui/status-filter"
+import Link from "next/link"
+import { Plus, ChevronRight } from "lucide-react"
 import type { VehicleStatus } from "@prisma/client"
 
 const VALID_STATUSES: VehicleStatus[] = ["AVAILABLE", "RENTED", "MAINTENANCE", "OUT_OF_SERVICE"]
@@ -42,30 +42,36 @@ export default async function VehiclesPage({
   })
 
   return (
-    <div>
-      <PageHeader
-        title="Véhicules"
-        description={`${vehicles.length} véhicule${vehicles.length > 1 ? "s" : ""} enregistré${vehicles.length > 1 ? "s" : ""}`}
-      >
-        <AddVehicleDialog />
-      </PageHeader>
-
-      <StatusFilter options={FILTER_OPTIONS} />
-
-      {vehicles.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <p className="text-lg">
-            {status && status !== "ALL"
-              ? "Aucun véhicule pour ce statut"
-              : "Aucun véhicule pour l'instant"}
+    <div className="space-y-8 max-w-[1440px] mx-auto">
+      {/* Page Header */}
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <nav className="flex items-center gap-1.5 text-[#444651] mb-2">
+            <span className="text-xs font-semibold">Flotte</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+            <span className="text-xs font-bold text-[#00236f]">Véhicules</span>
+          </nav>
+          <h1 className="text-4xl font-bold tracking-tight text-[#00236f]">
+            Gestion de la flotte
+          </h1>
+          <p className="text-base text-[#444651] mt-1">
+            Supervisez et gérez l&apos;ensemble de vos actifs roulants.
           </p>
-          {(!status || status === "ALL") && (
-            <p className="text-sm mt-1">Commencez par ajouter un véhicule à votre flotte</p>
-          )}
         </div>
-      ) : (
-        <VehiclesGrid vehicles={vehicles} />
-      )}
+        <Link
+          href="/vehicles/new"
+          className="flex items-center gap-2 bg-[#00236f] text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg shadow-[#00236f]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+          Ajouter un véhicule
+        </Link>
+      </div>
+
+      {/* Status filter pills */}
+      <StatusFilter options={FILTER_OPTIONS} className="flex flex-wrap gap-2" />
+
+      {/* Vehicle grid with inline search */}
+      <VehiclesGrid key={status ?? "ALL"} vehicles={vehicles} />
     </div>
   )
 }

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Car } from "lucide-react"
+import { Car, ImagePlus, X, Loader2 } from "lucide-react"
 import { createVehicleAction, updateVehicleAction } from "@/actions/vehicle.actions"
 import { VehicleCombobox } from "@/components/vehicles/vehicle-combobox"
 import { CAR_BRANDS, CAR_COLORS, CAR_YEARS } from "@/lib/car-data"
@@ -36,10 +36,29 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
   const [vin, setVin] = useState(vehicle?.vin ?? "")
   const [status, setStatus] = useState(vehicle?.status ?? "AVAILABLE")
 
+  const [imageUrl, setImageUrl] = useState(vehicle?.imageUrl ?? "")
+  const [imageUploading, setImageUploading] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+
   const [availableModels, setAvailableModels] = useState<string[]>(
     () => CAR_BRANDS.find((b) => b.name === (vehicle?.brand ?? ""))?.models ?? []
   )
   const brandNames = CAR_BRANDS.map((b) => b.name)
+
+  async function handleImageChange(file: File) {
+    setImageUploading(true)
+    const fd = new FormData()
+    fd.append("file", file)
+    const res = await fetch("/api/upload", { method: "POST", body: fd })
+    setImageUploading(false)
+    if (!res.ok) {
+      const err = await res.json()
+      toast.error(err.error ?? "Erreur lors de l'upload")
+      return
+    }
+    const { url } = await res.json()
+    setImageUrl(url)
+  }
 
   function handleBrandChange(val: string) {
     setBrand(val)
@@ -75,6 +94,7 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
       weeklyRate: weeklyRate ? parseFloat(weeklyRate) : undefined,
       monthlyRate: monthlyRate ? parseFloat(monthlyRate) : undefined,
       depositAmount: depositAmount ? parseFloat(depositAmount) : undefined,
+      imageUrl: imageUrl || undefined,
       notes: notes.trim() || undefined,
     }
 
@@ -96,10 +116,66 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
     }
   }
 
+  function ImageUploadField({ compact = false }: { compact?: boolean }) {
+    return (
+      <div>
+        <label className={`block font-medium text-gray-${compact ? "500" : "900"} mb-1.5 ${compact ? "text-xs" : "text-sm"}`}>
+          Photo du véhicule
+        </label>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageChange(f) }}
+        />
+        {imageUrl ? (
+          <div className="relative rounded-xl overflow-hidden border border-[#c5c5d3] h-40 group">
+            <img src={imageUrl} alt="Aperçu" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="px-3 py-1.5 bg-white rounded-lg text-xs font-semibold text-[#0b1c30]"
+              >
+                Changer
+              </button>
+              <button
+                type="button"
+                onClick={() => setImageUrl("")}
+                className="p-1.5 bg-white rounded-lg text-red-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={imageUploading}
+            className="w-full h-40 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#c5c5d3] rounded-xl text-[#757682] hover:border-[#00236f] hover:text-[#00236f] hover:bg-[#f0f4ff] transition-all disabled:opacity-50"
+          >
+            {imageUploading ? (
+              <Loader2 className="w-7 h-7 animate-spin" />
+            ) : (
+              <ImagePlus className="w-7 h-7" />
+            )}
+            <span className="text-xs font-medium">
+              {imageUploading ? "Upload en cours..." : "Cliquez pour ajouter une photo"}
+            </span>
+            <span className="text-[10px]">JPEG, PNG, WEBP · max 5 Mo</span>
+          </button>
+        )}
+      </div>
+    )
+  }
+
   // Edit mode: render the original compact form
   if (vehicle) {
     return (
       <div className="space-y-4">
+        <ImageUploadField compact />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Marque *</label>
@@ -333,6 +409,9 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
               placeholder="Couleur du véhicule"
             />
           </div>
+
+          {/* Image */}
+          <ImageUploadField />
 
           {/* Notes */}
           <div>
