@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { LayoutGrid, List, X, Car, ExternalLink } from "lucide-react"
+import { LayoutGrid, List, X, Car, ExternalLink, Trash2 } from "lucide-react"
 import { VehicleStatusBadge } from "./vehicle-status-badge"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import type { Vehicle, Contract, Driver } from "@prisma/client"
@@ -11,9 +11,29 @@ type VehicleWithContracts = Vehicle & {
   contracts: (Contract & { driver: Driver })[]
 }
 
-export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] }) {
+export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContracts[] }) {
+  const [vehicles, setVehicles] = useState(initial)
   const [view, setView] = useState<"grid" | "list">("grid")
   const [selected, setSelected] = useState<VehicleWithContracts | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState("")
+
+  async function handleDelete(vehicle: VehicleWithContracts) {
+    if (!confirm(`Supprimer le véhicule ${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate}) ? Cette action est irréversible.`)) return
+
+    setDeleting(true)
+    setDeleteError("")
+    const res = await fetch(`/api/vehicles/${vehicle.id}`, { method: "DELETE" })
+    setDeleting(false)
+
+    if (res.ok) {
+      setVehicles((prev) => prev.filter((v) => v.id !== vehicle.id))
+      setSelected(null)
+    } else {
+      const data = await res.json()
+      setDeleteError(data.error ?? "Erreur serveur")
+    }
+  }
 
   return (
     <>
@@ -43,7 +63,7 @@ export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] })
       {view === "grid" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
           {vehicles.map((v) => (
-            <button key={v.id} onClick={() => setSelected(v)} className="text-left group">
+            <button key={v.id} onClick={() => { setSelected(v); setDeleteError("") }} className="text-left group">
               <div className="bg-white rounded-xl border p-4 hover:shadow-md hover:border-blue-200 transition-all h-full">
                 <div className="flex items-start justify-between mb-2">
                   <div className="p-1.5 bg-blue-50 rounded-lg">
@@ -71,7 +91,7 @@ export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] })
           {vehicles.map((v) => (
             <button
               key={v.id}
-              onClick={() => setSelected(v)}
+              onClick={() => { setSelected(v); setDeleteError("") }}
               className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left"
             >
               <div className="p-2 bg-blue-50 rounded-lg shrink-0">
@@ -126,6 +146,14 @@ export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] })
                   <span className="hidden sm:inline">Modifier</span>
                 </Link>
                 <button
+                  onClick={() => handleDelete(selected)}
+                  disabled={deleting}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                  aria-label="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
                   onClick={() => setSelected(null)}
                   className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                   aria-label="Fermer"
@@ -137,6 +165,11 @@ export function VehiclesGrid({ vehicles }: { vehicles: VehicleWithContracts[] })
 
             {/* Body */}
             <div className="overflow-y-auto p-6 space-y-6">
+              {deleteError && (
+                <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">
+                  {deleteError}
+                </div>
+              )}
 
               {/* Informations */}
               <div>

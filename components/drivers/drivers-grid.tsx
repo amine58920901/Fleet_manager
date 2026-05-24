@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { LayoutGrid, List, X, User, Phone, Mail, CreditCard, MapPin, ExternalLink } from "lucide-react"
+import { LayoutGrid, List, X, User, Phone, Mail, CreditCard, MapPin, ExternalLink, Trash2 } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import type { Driver, Contract, Vehicle } from "@prisma/client"
 import Link from "next/link"
@@ -23,9 +23,29 @@ function LicenseExpiryBadge({ expiry }: { expiry: Date | null }) {
   return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cls}`}>{label}</span>
 }
 
-export function DriversGrid({ drivers }: { drivers: DriverWithContracts[] }) {
+export function DriversGrid({ drivers: initial }: { drivers: DriverWithContracts[] }) {
+  const [drivers, setDrivers] = useState(initial)
   const [view, setView] = useState<"grid" | "list">("grid")
   const [selected, setSelected] = useState<DriverWithContracts | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState("")
+
+  async function handleDelete(driver: DriverWithContracts) {
+    if (!confirm(`Supprimer le chauffeur ${driver.firstName} ${driver.lastName} ? Cette action est irréversible.`)) return
+
+    setDeleting(true)
+    setDeleteError("")
+    const res = await fetch(`/api/drivers/${driver.id}`, { method: "DELETE" })
+    setDeleting(false)
+
+    if (res.ok) {
+      setDrivers((prev) => prev.filter((d) => d.id !== driver.id))
+      setSelected(null)
+    } else {
+      const data = await res.json()
+      setDeleteError(data.error ?? "Erreur serveur")
+    }
+  }
 
   return (
     <>
@@ -55,7 +75,7 @@ export function DriversGrid({ drivers }: { drivers: DriverWithContracts[] }) {
       {view === "grid" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
           {drivers.map((d) => (
-            <button key={d.id} onClick={() => setSelected(d)} className="text-left group">
+            <button key={d.id} onClick={() => { setSelected(d); setDeleteError("") }} className="text-left group">
               <div className="bg-white rounded-xl border p-4 hover:shadow-md hover:border-green-200 transition-all h-full">
                 <div className="flex items-start justify-between mb-2">
                   <div className="p-1.5 bg-green-50 rounded-lg">
@@ -97,7 +117,7 @@ export function DriversGrid({ drivers }: { drivers: DriverWithContracts[] }) {
           {drivers.map((d) => (
             <button
               key={d.id}
-              onClick={() => setSelected(d)}
+              onClick={() => { setSelected(d); setDeleteError("") }}
               className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left"
             >
               <div className="p-2 bg-green-50 rounded-lg shrink-0">
@@ -135,14 +155,14 @@ export function DriversGrid({ drivers }: { drivers: DriverWithContracts[] }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-50 rounded-lg">
+            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-green-50 rounded-lg shrink-0">
                   <User className="h-5 w-5 text-green-600" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-semibold text-gray-900">
+                    <h2 className="font-semibold text-gray-900 truncate">
                       {selected.firstName} {selected.lastName}
                     </h2>
                     <LicenseExpiryBadge expiry={selected.licenseExpiry} />
@@ -152,18 +172,30 @@ export function DriversGrid({ drivers }: { drivers: DriverWithContracts[] }) {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500">Permis n° {selected.licenseNumber}</p>
+                  <p className="text-sm text-gray-500 truncate">Permis n° {selected.licenseNumber}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <Link
                   href={`/drivers/${selected.id}`}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  Modifier
+                  <span className="hidden sm:inline">Modifier</span>
                 </Link>
-                <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-1">
+                <button
+                  onClick={() => handleDelete(selected)}
+                  disabled={deleting}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                  aria-label="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setSelected(null)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  aria-label="Fermer"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -171,6 +203,11 @@ export function DriversGrid({ drivers }: { drivers: DriverWithContracts[] }) {
 
             {/* Body */}
             <div className="overflow-y-auto p-6 space-y-6">
+              {deleteError && (
+                <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">
+                  {deleteError}
+                </div>
+              )}
 
               {/* Coordonnées */}
               <div>
