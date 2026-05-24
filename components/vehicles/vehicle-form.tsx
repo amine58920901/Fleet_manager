@@ -9,6 +9,24 @@ import { VehicleCombobox } from "@/components/vehicles/vehicle-combobox"
 import { CAR_BRANDS, CAR_COLORS, CAR_YEARS } from "@/lib/car-data"
 import type { Vehicle } from "@prisma/client"
 
+function compressImage(file: File, maxWidth: number, quality: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const scale = Math.min(1, maxWidth / img.width)
+      const canvas = document.createElement("canvas")
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL("image/jpeg", quality))
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
+
 interface VehicleFormProps {
   vehicle?: Vehicle
   onSuccess?: () => void
@@ -46,20 +64,16 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
   const brandNames = CAR_BRANDS.map((b) => b.name)
 
   async function handleImageChange(file: File) {
+    if (file.size > 10 * 1024 * 1024) { toast.error("Image trop grande (max 10 Mo)"); return }
     setImageUploading(true)
-    const fd = new FormData()
-    fd.append("file", file)
-    const res = await fetch("/api/upload", { method: "POST", body: fd })
-    setImageUploading(false)
-    if (!res.ok) {
-      const text = await res.text()
-      let msg = "Erreur lors de l'upload"
-      try { msg = JSON.parse(text).error ?? msg } catch { /* not JSON */ }
-      toast.error(msg)
-      return
+    try {
+      const dataUrl = await compressImage(file, 900, 0.78)
+      setImageUrl(dataUrl)
+    } catch {
+      toast.error("Erreur lors du traitement de l'image")
+    } finally {
+      setImageUploading(false)
     }
-    const { url } = await res.json()
-    setImageUrl(url)
   }
 
   function handleBrandChange(val: string) {
