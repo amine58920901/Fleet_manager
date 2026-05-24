@@ -46,9 +46,24 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 2 * 1024 * 1024) { toast.error("Logo trop lourd (max 2 Mo)"); return }
-    const reader = new FileReader()
-    reader.onload = (ev) => setLogo(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    const img = new Image()
+    const objectUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl)
+      const size = Math.min(Math.max(img.width, img.height), 200)
+      const canvas = document.createElement("canvas")
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext("2d")!
+      ctx.fillStyle = "#ffffff"
+      ctx.fillRect(0, 0, size, size)
+      const scale = size / Math.max(img.width, img.height)
+      const x = (size - img.width * scale) / 2
+      const y = (size - img.height * scale) / 2
+      ctx.drawImage(img, x, y, img.width * scale, img.height * scale)
+      setLogo(canvas.toDataURL("image/jpeg", 0.9))
+    }
+    img.src = objectUrl
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -146,7 +161,7 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
               </div>
             )}
             <div>
-              <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} className="hidden" />
+              <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={handleLogoChange} className="hidden" />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -154,7 +169,7 @@ export function DocumentSettingsForm({ settings, orgName }: Props) {
               >
                 {logo ? "Changer le logo" : "Choisir un fichier"}
               </button>
-              <p className="text-xs text-gray-400 mt-1.5">PNG, JPG, WEBP · max 2 Mo</p>
+              <p className="text-xs text-gray-400 mt-1.5">PNG, JPG, WEBP · max 2 Mo · converti en JPEG</p>
               <p className="text-xs text-gray-400">Recommandé : fond transparent, format carré</p>
             </div>
           </div>
