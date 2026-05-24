@@ -48,8 +48,8 @@ async function getDashboardData(organizationId: string) {
     db.contract.count({ where: { organizationId, status: "ACTIVE" } }),
     db.invoice.count({ where: { organizationId, status: "UNPAID" } }),
     db.invoice.findMany({
-      where: { organizationId, status: "PAID", updatedAt: { gte: sixMonthsAgo } },
-      select: { total: true, updatedAt: true },
+      where: { organizationId, status: "PAID", issueDate: { gte: sixMonthsAgo } },
+      select: { total: true, issueDate: true },
     }),
     db.contract.findMany({
       where: { organizationId },
@@ -68,7 +68,7 @@ async function getDashboardData(organizationId: string) {
     revenueMap[`${d.getFullYear()}-${d.getMonth()}`] = 0
   }
   for (const inv of paidInvoices) {
-    const key = `${inv.updatedAt.getFullYear()}-${inv.updatedAt.getMonth()}`
+    const key = `${inv.issueDate.getFullYear()}-${inv.issueDate.getMonth()}`
     if (key in revenueMap) revenueMap[key] += Number(inv.total)
   }
 
