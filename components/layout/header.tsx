@@ -1,5 +1,5 @@
-import { auth, signOut } from "@/lib/auth"
-import { LogOut, Bell, HelpCircle, Search } from "lucide-react"
+import { auth } from "@/lib/auth"
+import { Bell, HelpCircle, Search } from "lucide-react"
 import { MobileNav } from "@/components/layout/mobile-nav"
 
 export async function Header() {
@@ -47,21 +47,6 @@ export async function Header() {
           </div>
         </div>
 
-        {/* Logout */}
-        <form
-          action={async () => {
-            "use server"
-            await signOut({ redirectTo: "/login" })
-          }}
-        >
-          <button
-            type="submit"
-            className="flex items-center gap-1.5 text-sm text-[#444651] hover:text-[#0b1c30] transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Déconnexion</span>
-          </button>
-        </form>
       </div>
     </header>
   )
