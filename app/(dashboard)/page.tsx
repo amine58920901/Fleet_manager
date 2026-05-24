@@ -239,11 +239,14 @@ export default async function DashboardPage() {
                 6 derniers mois
               </span>
             </div>
-            <div className="relative h-56 flex items-end justify-between gap-3 px-2">
+            <div className="flex items-end justify-between gap-3 px-2" style={{ height: 224 }}>
               {monthlyRevenue.map((month) => {
-                const heightPct = Math.max((month.value / maxRevenue) * 85, month.value > 0 ? 8 : 3)
+                const BAR_MAX_PX = 180
+                const barPx = month.value > 0
+                  ? Math.max(Math.round((month.value / maxRevenue) * BAR_MAX_PX), 16)
+                  : 4
                 return (
-                  <div key={month.label} className="flex-1 flex flex-col items-center justify-end gap-2 group/bar">
+                  <div key={month.label} className="flex-1 flex flex-col items-center justify-end gap-2 group/bar" style={{ height: 224 }}>
                     {month.value > 0 && (
                       <span className="text-[10px] font-semibold text-[#444651] opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
                         {formatCurrency(month.value)}
@@ -255,7 +258,7 @@ export default async function DashboardPage() {
                           ? "bg-[#00236f]"
                           : "bg-[#b6c4ff] group-hover/bar:bg-[#1e3a8a]"
                       }`}
-                      style={{ height: `${heightPct}%` }}
+                      style={{ height: barPx }}
                     />
                     <p className={`text-xs font-semibold ${month.isCurrent ? "text-[#00236f] font-bold" : "text-[#444651]/60"}`}>
                       {month.label}
