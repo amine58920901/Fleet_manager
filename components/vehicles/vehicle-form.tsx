@@ -52,8 +52,10 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
     const res = await fetch("/api/upload", { method: "POST", body: fd })
     setImageUploading(false)
     if (!res.ok) {
-      const err = await res.json()
-      toast.error(err.error ?? "Erreur lors de l'upload")
+      const text = await res.text()
+      let msg = "Erreur lors de l'upload"
+      try { msg = JSON.parse(text).error ?? msg } catch { /* not JSON */ }
+      toast.error(msg)
       return
     }
     const { url } = await res.json()
