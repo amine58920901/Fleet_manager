@@ -48,7 +48,7 @@ async function getDashboardData(organizationId: string) {
     db.contract.count({ where: { organizationId, status: "ACTIVE" } }),
     db.invoice.count({ where: { organizationId, status: "UNPAID" } }),
     db.invoice.findMany({
-      where: { organizationId, status: "PAID", issueDate: { gte: sixMonthsAgo } },
+      where: { organizationId, status: "PAID" },
       select: { total: true, issueDate: true },
     }),
     db.contract.findMany({
@@ -59,25 +59,33 @@ async function getDashboardData(organizationId: string) {
     }),
   ])
 
-  // Aggregate revenue by month
+  // Aggregate revenue by month (UTC to avoid timezone drift)
   const now = new Date()
+  const currentYear = now.getUTCFullYear()
+  const currentMonth = now.getUTCMonth()
   const revenueMap: Record<string, number> = {}
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now)
-    d.setMonth(d.getMonth() - i)
-    revenueMap[`${d.getFullYear()}-${d.getMonth()}`] = 0
+    const y = currentMonth - i < 0
+      ? currentYear - 1
+      : currentYear
+    const m = ((currentMonth - i) % 12 + 12) % 12
+    revenueMap[`${y}-${m}`] = 0
   }
   for (const inv of paidInvoices) {
-    const key = `${inv.issueDate.getFullYear()}-${inv.issueDate.getMonth()}`
+    const key = `${inv.issueDate.getUTCFullYear()}-${inv.issueDate.getUTCMonth()}`
     if (key in revenueMap) revenueMap[key] += Number(inv.total)
   }
 
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth()
-  const monthlyRevenue = Object.entries(revenueMap).map(([key, value]) => {
-    const [y, m] = key.split("-").map(Number)
-    return { label: MONTH_LABELS[m], value, isCurrent: y === currentYear && m === currentMonth }
-  })
+  const monthlyRevenue = Object.entries(revenueMap)
+    .sort(([a], [b]) => {
+      const [ay, am] = a.split("-").map(Number)
+      const [by, bm] = b.split("-").map(Number)
+      return ay !== by ? ay - by : am - bm
+    })
+    .map(([key, value]) => {
+      const [, m] = key.split("-").map(Number)
+      return { label: MONTH_LABELS[m], value, isCurrent: Number(key.split("-")[0]) === currentYear && m === currentMonth }
+    })
 
   return {
     totalVehicles, availableVehicles, rentedVehicles,
