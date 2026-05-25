@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Gauge, Calendar, Wrench, ExternalLink, Trash2, Search, Car, LayoutGrid, List } from "lucide-react"
 import Link from "next/link"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { Pagination } from "@/components/ui/pagination"
 import type { Vehicle, Contract, Driver } from "@prisma/client"
 
 type VehicleWithContracts = Vehicle & {
@@ -259,6 +260,16 @@ export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContr
   const [vehicles, setVehicles] = useState(initial)
   const [view, setView] = useState<"grid" | "list">("grid")
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)")
+    const update = () => setPerPage(mq.matches ? 5 : 10)
+    update()
+    mq.addEventListener("change", update)
+    return () => mq.removeEventListener("change", update)
+  }, [])
 
   const filtered = search.trim()
     ? vehicles.filter((v) =>
@@ -266,8 +277,17 @@ export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContr
       )
     : vehicles
 
+  const totalPages = Math.ceil(filtered.length / perPage)
+  const safePage = Math.min(page, Math.max(1, totalPages))
+  const paginated = filtered.slice((safePage - 1) * perPage, safePage * perPage)
+
   function removeVehicle(id: string) {
     setVehicles((prev) => prev.filter((v) => v.id !== id))
+  }
+
+  function handleSearch(value: string) {
+    setSearch(value)
+    setPage(1)
   }
 
   return (
@@ -279,7 +299,7 @@ export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContr
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             placeholder="Rechercher par marque, modèle, plaque…"
             className="w-full h-11 pl-10 pr-4 bg-[#f8f9ff] border border-[#c5c5d3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 focus:border-[#00236f] text-[#0b1c30] placeholder:text-[#757682] transition-all"
           />
@@ -319,11 +339,14 @@ export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContr
 
       {/* Grid view */}
       {view === "grid" && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
-          {filtered.map((v) => (
-            <VehicleCard key={v.id} vehicle={v} onRemove={removeVehicle} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {paginated.map((v) => (
+              <VehicleCard key={v.id} vehicle={v} onRemove={removeVehicle} />
+            ))}
+          </div>
+          <Pagination page={safePage} totalPages={totalPages} totalItems={filtered.length} itemsPerPage={perPage} onNavigate={setPage} />
+        </>
       )}
 
       {/* List view */}
@@ -337,9 +360,10 @@ export function VehiclesGrid({ vehicles: initial }: { vehicles: VehicleWithContr
             <span className="text-xs font-semibold text-[#757682] uppercase tracking-wider hidden sm:block w-24">Tarif/j</span>
             <div className="w-20 shrink-0" />
           </div>
-          {filtered.map((v) => (
+          {paginated.map((v) => (
             <VehicleRow key={v.id} vehicle={v} onRemove={removeVehicle} />
           ))}
+          <Pagination page={safePage} totalPages={totalPages} totalItems={filtered.length} itemsPerPage={perPage} onNavigate={setPage} />
         </div>
       )}
     </div>

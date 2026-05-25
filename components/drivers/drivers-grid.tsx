@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { LayoutGrid, List, User, Phone, CreditCard, Car, ExternalLink, Trash2, Search, Plus } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import { Pagination } from "@/components/ui/pagination"
 import type { Driver, Contract, Vehicle } from "@prisma/client"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -219,6 +220,16 @@ export function DriversGrid({ drivers: initial }: { drivers: DriverWithContracts
   const [drivers, setDrivers] = useState(initial)
   const [view, setView] = useState<"grid" | "list">("grid")
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)")
+    const update = () => setPerPage(mq.matches ? 5 : 10)
+    update()
+    mq.addEventListener("change", update)
+    return () => mq.removeEventListener("change", update)
+  }, [])
 
   const filtered = search.trim()
     ? drivers.filter((d) =>
@@ -226,8 +237,17 @@ export function DriversGrid({ drivers: initial }: { drivers: DriverWithContracts
       )
     : drivers
 
+  const totalPages = Math.ceil(filtered.length / perPage)
+  const safePage = Math.min(page, Math.max(1, totalPages))
+  const paginated = filtered.slice((safePage - 1) * perPage, safePage * perPage)
+
   function removeDriver(id: string) {
     setDrivers((prev) => prev.filter((d) => d.id !== id))
+  }
+
+  function handleSearch(value: string) {
+    setSearch(value)
+    setPage(1)
   }
 
   return (
@@ -239,7 +259,7 @@ export function DriversGrid({ drivers: initial }: { drivers: DriverWithContracts
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             placeholder="Rechercher par nom, téléphone, permis…"
             className="w-full h-11 pl-10 pr-4 bg-[#f8f9ff] border border-[#c5c5d3] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 focus:border-[#00236f] text-[#0b1c30] placeholder:text-[#757682] transition-all"
           />
@@ -279,22 +299,26 @@ export function DriversGrid({ drivers: initial }: { drivers: DriverWithContracts
 
       {/* Grid view */}
       {view === "grid" && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
-          {filtered.map((d) => (
-            <DriverCard key={d.id} driver={d} onRemove={removeDriver} />
-          ))}
-          {/* Add slot */}
-          <Link
-            href="/drivers/new"
-            className="border-2 border-dashed border-[#c5c5d3] rounded-2xl flex flex-col items-center justify-center p-8 group hover:bg-[#f0f4ff] hover:border-[#00236f] transition-all min-h-[320px]"
-          >
-            <div className="w-16 h-16 rounded-full bg-[#dce1ff] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Plus className="h-8 w-8 text-[#00236f]" />
-            </div>
-            <span className="text-base font-semibold text-[#444651] group-hover:text-[#00236f]">Ajouter un chauffeur</span>
-            <p className="text-sm text-[#757682] mt-2 text-center">Enregistrez un nouveau membre dans le système.</p>
-          </Link>
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {paginated.map((d) => (
+              <DriverCard key={d.id} driver={d} onRemove={removeDriver} />
+            ))}
+            {safePage >= totalPages && (
+              <Link
+                href="/drivers/new"
+                className="border-2 border-dashed border-[#c5c5d3] rounded-2xl flex flex-col items-center justify-center p-8 group hover:bg-[#f0f4ff] hover:border-[#00236f] transition-all min-h-[320px]"
+              >
+                <div className="w-16 h-16 rounded-full bg-[#dce1ff] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Plus className="h-8 w-8 text-[#00236f]" />
+                </div>
+                <span className="text-base font-semibold text-[#444651] group-hover:text-[#00236f]">Ajouter un chauffeur</span>
+                <p className="text-sm text-[#757682] mt-2 text-center">Enregistrez un nouveau membre dans le système.</p>
+              </Link>
+            )}
+          </div>
+          <Pagination page={safePage} totalPages={totalPages} totalItems={filtered.length} itemsPerPage={perPage} onNavigate={setPage} />
+        </>
       )}
 
       {/* List view */}
@@ -308,9 +332,10 @@ export function DriversGrid({ drivers: initial }: { drivers: DriverWithContracts
             <span className="text-xs font-semibold text-[#757682] uppercase tracking-wider">Statut</span>
             <div className="w-20" />
           </div>
-          {filtered.map((d) => (
+          {paginated.map((d) => (
             <DriverRow key={d.id} driver={d} onRemove={removeDriver} />
           ))}
+          <Pagination page={safePage} totalPages={totalPages} totalItems={filtered.length} itemsPerPage={perPage} onNavigate={setPage} />
         </div>
       )}
     </div>

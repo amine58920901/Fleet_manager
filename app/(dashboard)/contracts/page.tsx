@@ -1,7 +1,9 @@
+import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { StatusFilter } from "@/components/ui/status-filter"
 import { ContractsGantt } from "@/components/contracts/contracts-gantt"
+import { Pagination } from "@/components/ui/pagination"
 import Link from "next/link"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { Plus, ClipboardList, Clock, TrendingUp, ExternalLink } from "lucide-react"
@@ -34,30 +36,38 @@ const statusDot: Record<ContractStatus, string> = {
   CANCELLED: "bg-red-500",
 }
 
+const PER_PAGE = 10
+
 export default async function ContractsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; page?: string }>
 }) {
-  const { status } = await searchParams
+  const { status, page: pageParam } = await searchParams
   const session = await auth()
   const orgId = session!.user.organizationId
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
 
   const statusFilter =
     status && VALID_STATUSES.includes(status as ContractStatus)
       ? { status: status as ContractStatus }
       : {}
 
-  const [allActive, filteredContracts, ganttVehicles] = await Promise.all([
+  const contractsWhere = { organizationId: orgId, ...statusFilter }
+
+  const [allActive, filteredContracts, contractsTotal, ganttVehicles] = await Promise.all([
     db.contract.findMany({
       where: { organizationId: orgId, status: "ACTIVE" },
       select: { id: true, endDate: true },
     }),
     db.contract.findMany({
-      where: { organizationId: orgId, ...statusFilter },
+      where: contractsWhere,
       include: { vehicle: true, driver: true },
       orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PER_PAGE,
+      take: PER_PAGE,
     }),
+    db.contract.count({ where: contractsWhere }),
     db.vehicle.findMany({
       where: { organizationId: orgId },
       include: {
@@ -70,6 +80,8 @@ export default async function ContractsPage({
       take: 10,
     }),
   ])
+
+  const contractsTotalPages = Math.ceil(contractsTotal / PER_PAGE)
 
   const today = new Date()
   const sevenDaysLater = new Date(today)
@@ -321,9 +333,12 @@ export default async function ContractsPage({
           </div>
         )}
 
-        <div className="p-6 border-t border-gray-100">
+        <Suspense>
+          <Pagination page={page} totalPages={contractsTotalPages} totalItems={contractsTotal} itemsPerPage={PER_PAGE} />
+        </Suspense>
+        <div className="px-6 pb-6">
           <p className="text-sm text-[#444651]">
-            {filteredContracts.length} contrat{filteredContracts.length > 1 ? "s" : ""}
+            {contractsTotal} contrat{contractsTotal > 1 ? "s" : ""}
             {status && status !== "ALL" ? ` · filtre: ${statusLabel[status as ContractStatus]}` : ""}
           </p>
         </div>

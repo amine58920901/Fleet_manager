@@ -1,8 +1,10 @@
+import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { InvoiceStatusBadge } from "@/components/invoices/invoice-status-badge"
 import { StatusFilter } from "@/components/ui/status-filter"
+import { Pagination } from "@/components/ui/pagination"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { formatCurrency, formatDate } from "@/lib/utils"
@@ -18,27 +20,39 @@ const FILTER_OPTIONS = [
   { value: "CANCELLED", label: "Annulée" },
 ]
 
+const PER_PAGE = 10
+
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; page?: string }>
 }) {
-  const { status } = await searchParams
+  const { status, page: pageParam } = await searchParams
   const session = await auth()
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
 
   const statusFilter =
     status && VALID_STATUSES.includes(status as InvoiceStatus)
       ? { status: status as InvoiceStatus }
       : {}
 
-  const invoices = await db.invoice.findMany({
-    where: { organizationId: session!.user.organizationId, ...statusFilter },
-    orderBy: { createdAt: "desc" },
-  })
+  const where = { organizationId: session!.user.organizationId, ...statusFilter }
+
+  const [invoices, total] = await Promise.all([
+    db.invoice.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PER_PAGE,
+      take: PER_PAGE,
+    }),
+    db.invoice.count({ where }),
+  ])
+
+  const totalPages = Math.ceil(total / PER_PAGE)
 
   return (
     <div>
-      <PageHeader title="Factures" description={`${invoices.length} facture${invoices.length > 1 ? "s" : ""}`}>
+      <PageHeader title="Factures" description={`${total} facture${total > 1 ? "s" : ""}`}>
         <Link
           href="/invoices/new"
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -50,7 +64,7 @@ export default async function InvoicesPage({
 
       <StatusFilter options={FILTER_OPTIONS} />
 
-      {invoices.length === 0 ? (
+      {total === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-lg">Aucune facture{status && status !== "ALL" ? " pour ce statut" : " pour l'instant"}</p>
         </div>
@@ -84,6 +98,9 @@ export default async function InvoicesPage({
               ))}
             </tbody>
           </table>
+          <Suspense>
+            <Pagination page={page} totalPages={totalPages} totalItems={total} itemsPerPage={PER_PAGE} />
+          </Suspense>
         </div>
       )}
     </div>
